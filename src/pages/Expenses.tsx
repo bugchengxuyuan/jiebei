@@ -187,7 +187,7 @@ export default function Expenses() {
   )
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-20">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto pb-20 md:pb-6">
       {/* 页面标题 */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -361,7 +361,7 @@ export default function Expenses() {
       </Card>
 
       {/* 📈 支出统计卡片 */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-2">

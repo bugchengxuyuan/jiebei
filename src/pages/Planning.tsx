@@ -27,7 +27,7 @@ export default function Planning() {
   const dailyAverage = recentTotal / 7
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto pb-20 md:pb-6">
       {/* 页面标题 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-800">还款规划</h1>
@@ -87,7 +87,7 @@ export default function Planning() {
               {usageRate.toFixed(1)}%
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div className="p-3 bg-slate-50 rounded-lg">
               <div className="text-xs text-slate-600 mb-1">剩余额度</div>
               <div className="text-lg font-bold text-slate-800">
@@ -131,7 +131,7 @@ export default function Planning() {
               <AlertCircle className="w-4 h-4 text-slate-600" />
               <span className="text-sm font-medium">近7天消费情况</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-slate-600">总消费：</span>
                 <span className="font-medium ml-1">{formatCurrency(recentTotal)}</span>

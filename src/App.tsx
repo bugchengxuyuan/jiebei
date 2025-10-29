@@ -52,15 +52,43 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50">
+      {/* 桌面端侧边导航栏 */}
+      <nav className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-slate-200 shadow-sm">
+        <div className="p-6 border-b border-slate-200">
+          <h1 className="text-xl font-bold text-slate-800">借呗财务管理</h1>
+          <p className="text-xs text-slate-500 mt-1">Jiebei Finance</p>
+        </div>
+        <div className="flex-1 py-4">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = currentPage === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentPage(item.id)}
+                className={`w-full flex items-center gap-3 px-6 py-3 transition-colors ${
+                  isActive
+                    ? 'text-blue-600 bg-blue-50 border-r-4 border-blue-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="font-medium">{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+
       {/* 主内容区域 */}
-      <main className="flex-1 overflow-y-auto pb-20">
+      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
         <CurrentPageComponent />
       </main>
 
-      {/* 底部导航栏 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg">
-        <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+      {/* 移动端底部导航栏 */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg">
+        <div className="flex justify-around items-center h-16">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = currentPage === item.id
