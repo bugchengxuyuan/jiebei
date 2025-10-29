@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Plus, Check, Trash2 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useMemo } from 'react'
+import { Plus, Check, Trash2, Clock, BarChart3, Calendar, Zap, Copy } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { formatCurrency, formatShortDate } from '@/utils/formatters'
+import type { Reimbursement } from '@/store/types'
 
 export default function Reimbursement() {
   const { reimbursements, addReimbursement, updateReimbursement, deleteReimbursement, stats } = useFinanceStore()
@@ -21,6 +22,59 @@ export default function Reimbursement() {
 
   const pendingReimbs = reimbursements.filter(r => r.status === 'pending')
   const reimbursedReimbs = reimbursements.filter(r => r.status === 'reimbursed')
+
+  // 统计数据
+  const statistics = useMemo(() => {
+    const totalPending = pendingReimbs.reduce((sum, r) => sum + r.amount, 0)
+    const totalReimbursed = reimbursedReimbs.reduce((sum, r) => sum + r.amount, 0)
+    const totalAll = totalPending + totalReimbursed
+    const avgReimb = reimbursements.length > 0 ? totalAll / reimbursements.length : 0
+    const maxReimb = reimbursements.length > 0 ? Math.max(...reimbursements.map(r => r.amount)) : 0
+
+    // 计算平均报销时长
+    const avgDays = reimbursedReimbs.length > 0
+      ? reimbursedReimbs.reduce((sum, r) => {
+          if (r.reimbursedDate) {
+            const days = Math.floor(
+              (new Date(r.reimbursedDate).getTime() - new Date(r.date).getTime()) /
+              (1000 * 60 * 60 * 24)
+            )
+            return sum + days
+          }
+          return sum
+        }, 0) / reimbursedReimbs.length
+      : 0
+
+    // 最近6个月趋势
+    const last6Months = []
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date()
+      date.setMonth(date.getMonth() - i)
+      const monthStr = date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric' })
+
+      const monthReimbs = reimbursedReimbs.filter(r => {
+        if (!r.reimbursedDate) return false
+        const rDate = new Date(r.reimbursedDate)
+        return rDate.getMonth() === date.getMonth() && rDate.getFullYear() === date.getFullYear()
+      })
+
+      last6Months.push({
+        month: monthStr,
+        count: monthReimbs.length,
+        amount: monthReimbs.reduce((sum, r) => sum + r.amount, 0)
+      })
+    }
+
+    return {
+      totalPending,
+      totalReimbursed,
+      totalAll,
+      avgReimb,
+      maxReimb,
+      avgDays,
+      last6Months
+    }
+  }, [reimbursements, pendingReimbs, reimbursedReimbs])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,12 +107,23 @@ export default function Reimbursement() {
     }
   }
 
+  // 快速复制报销项
+  const handleCopyReimbursement = (reimb: Reimbursement) => {
+    setFormData({
+      date: new Date().toISOString().split('T')[0],
+      item: reimb.item,
+      amount: reimb.amount.toString(),
+      note: reimb.note,
+    })
+    setIsOpen(true)
+  }
+
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-20">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">报销管理</h1>
+          <h1 className="text-2xl font-bold text-slate-800">报销分析</h1>
           <p className="text-sm text-slate-500 mt-1">
             待报销: {formatCurrency(stats?.pendingReimbursement || 0)}
           </p>
@@ -130,33 +195,156 @@ export default function Reimbursement() {
         </Dialog>
       </div>
 
-      {/* 报销统计 */}
-      <Card className="border-2 border-orange-100 bg-gradient-to-br from-orange-50 to-yellow-50">
-        <CardContent className="pt-6">
+      {/* 📊 报销统计卡片 */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="w-4 h-4 text-orange-600" />
+              <span className="text-sm font-medium text-slate-600">待报销</span>
+            </div>
+            <div className="text-2xl font-bold text-orange-600">
+              {formatCurrency(statistics.totalPending)}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              {pendingReimbs.length} 笔待收回
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Check className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-slate-600">已报销</span>
+            </div>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(statistics.totalReimbursed)}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              {reimbursedReimbs.length} 笔已到账
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 📈 报销分析 */}
+      <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-indigo-600" />
+            报销分析
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm text-slate-600 mb-1">待报销</div>
-              <div className="text-3xl font-bold text-orange-600">
-                {pendingReimbs.length}
-              </div>
-              <div className="text-xs text-slate-500 mt-1">
-                {formatCurrency(stats?.pendingReimbursement || 0)}
+            <div className="text-center">
+              <div className="text-xs text-slate-600 mb-1">平均单笔</div>
+              <div className="text-xl font-bold text-indigo-600">
+                {formatCurrency(statistics.avgReimb)}
               </div>
             </div>
-            <div>
-              <div className="text-sm text-slate-600 mb-1">已报销</div>
-              <div className="text-3xl font-bold text-green-600">
-                {reimbursedReimbs.length}
-              </div>
-              <div className="text-xs text-slate-500 mt-1">
-                {formatCurrency(
-                  reimbursedReimbs.reduce((sum, r) => sum + r.amount, 0)
-                )}
+            <div className="text-center">
+              <div className="text-xs text-slate-600 mb-1">最大单笔</div>
+              <div className="text-xl font-bold text-purple-600">
+                {formatCurrency(statistics.maxReimb)}
               </div>
             </div>
           </div>
+          {statistics.avgDays > 0 && (
+            <div className="mt-4 pt-4 border-t border-indigo-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">平均报销时长</span>
+                <span className="font-bold text-indigo-600">
+                  {Math.round(statistics.avgDays)} 天
+                </span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* 📅 月度报销趋势 */}
+      {statistics.last6Months.some(m => m.count > 0) && (
+        <Card className="border-2 border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-teal-600" />
+              月度趋势（最近6个月）
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {statistics.last6Months.filter(m => m.count > 0).map((month, index) => {
+                const maxAmount = Math.max(...statistics.last6Months.map(m => m.amount))
+                const percentage = maxAmount > 0 ? (month.amount / maxAmount) * 100 : 0
+                return (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="text-xs font-medium text-slate-600 w-16">
+                      {month.month.replace(/\//g, '/')}
+                    </div>
+                    <div className="flex-1">
+                      <div className="h-6 bg-teal-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-teal-500 transition-all"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-sm font-bold text-slate-700 w-24 text-right">
+                      {formatCurrency(month.amount)}
+                    </div>
+                    <div className="text-xs text-slate-500 w-12 text-right">
+                      {month.count}笔
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ⚡ 快速报销 */}
+      {reimbursedReimbs.length > 0 && (
+        <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5 text-green-600" />
+              快速报销
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-sm text-slate-600 mb-2">点击"再报一次"快速复制报销项</div>
+              {reimbursedReimbs.slice(0, 3).map((reimb) => (
+                <div
+                  key={reimb.id}
+                  className="flex items-center justify-between p-2 bg-white rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-slate-800 truncate">
+                      {reimb.item}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {reimb.note} · {formatCurrency(reimb.amount)}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyReimbursement(reimb)}
+                    className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50 ml-2"
+                  >
+                    <Copy className="w-3 h-3" />
+                    再报一次
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 报销列表 */}
       <Tabs defaultValue="pending" className="w-full">

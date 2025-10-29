@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, Trash2, TrendingUp } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Plus, Trash2, TrendingUp, PieChart, BarChart2, DollarSign, Layers } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,14 +24,35 @@ export default function Investment() {
 
   const activeInvestments = investments.filter(inv => inv.status === 'holding')
 
-  // 按类型分组
-  const groupedInvestments = INVESTMENT_TYPES.map(type => ({
-    ...type,
-    items: activeInvestments.filter(inv => inv.type === type.value),
-    total: activeInvestments
-      .filter(inv => inv.type === type.value)
-      .reduce((sum, inv) => sum + inv.amount, 0),
-  }))
+  // 投资统计数据
+  const statistics = useMemo(() => {
+    const total = stats?.totalInvestment || 0
+    const count = activeInvestments.length
+    const avg = count > 0 ? total / count : 0
+    const max = count > 0 ? Math.max(...activeInvestments.map(i => i.amount)) : 0
+
+    // 按类型统计
+    const byType = INVESTMENT_TYPES.map(type => {
+      const typeInvs = activeInvestments.filter(inv => inv.type === type.value)
+      const amount = typeInvs.reduce((sum, inv) => sum + inv.amount, 0)
+      const percentage = total > 0 ? (amount / total) * 100 : 0
+      return {
+        ...type,
+        amount,
+        count: typeInvs.length,
+        percentage,
+        items: typeInvs
+      }
+    }).filter(t => t.count > 0)
+
+    return {
+      total,
+      count,
+      avg,
+      max,
+      byType
+    }
+  }, [activeInvestments, stats])
 
   const investmentRate = config ? calculateInvestmentRate(
     stats?.totalInvestment || 0,
@@ -65,11 +86,11 @@ export default function Investment() {
   }
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-20">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">投资资产</h1>
+          <h1 className="text-2xl font-bold text-slate-800">投资分析</h1>
           <p className="text-sm text-slate-500 mt-1">
             持仓: {formatCurrency(stats?.totalInvestment || 0)}
           </p>
@@ -156,6 +177,75 @@ export default function Investment() {
         </Dialog>
       </div>
 
+      {/* 📊 投资统计卡片 */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-slate-600">总持仓</span>
+            </div>
+            <div className="text-2xl font-bold text-blue-600">
+              {formatCurrency(statistics.total)}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              {statistics.count} 个产品
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart2 className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-slate-600">平均投资</span>
+            </div>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(statistics.avg)}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              最大 {formatCurrency(statistics.max)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 🥧 资产配置分析 */}
+      {statistics.byType.length > 0 && (
+        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <PieChart className="w-5 h-5 text-purple-600" />
+              资产配置
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {statistics.byType.map((type) => (
+                <div key={type.value} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{type.icon}</span>
+                      <span className="font-medium text-slate-700">{type.label}</span>
+                      <span className="text-xs text-slate-500">({type.count}个)</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-slate-800">
+                        {formatCurrency(type.amount)}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {type.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <Progress value={type.percentage} className="h-2" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 资产概况 */}
       <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
         <CardHeader className="pb-3">
@@ -187,23 +277,34 @@ export default function Investment() {
         </CardContent>
       </Card>
 
-      {/* 按类型展示 */}
-      {groupedInvestments.map((group) => (
-        group.items.length > 0 && (
-          <Card key={group.value}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-2xl">{group.icon}</span>
-                  <span>{group.label}</span>
-                </CardTitle>
-                <div className={`px-3 py-1 rounded-full bg-${group.color}-100 text-${group.color}-700 font-bold`}>
-                  {formatCurrency(group.total)}
+      {/* 📋 持仓明细 */}
+      {statistics.byType.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-5 h-5 text-slate-600" />
+            <h3 className="text-lg font-semibold text-slate-800">
+              持仓明细 ({statistics.count}个)
+            </h3>
+          </div>
+
+          {statistics.byType.map((type) => (
+            <Card key={type.value}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <span className="text-2xl">{type.icon}</span>
+                    <span>{type.label}</span>
+                    <span className="text-sm font-normal text-slate-500">
+                      ({type.count}个 · {type.percentage.toFixed(1)}%)
+                    </span>
+                  </CardTitle>
+                  <div className={`px-3 py-1 rounded-full bg-${type.color}-100 text-${type.color}-700 font-bold`}>
+                    {formatCurrency(type.amount)}
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {group.items.map((inv) => (
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {type.items.map((inv) => (
                 <div
                   key={inv.id}
                   className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
@@ -234,8 +335,9 @@ export default function Investment() {
               ))}
             </CardContent>
           </Card>
-        )
-      ))}
+          ))}
+        </div>
+      )}
 
       {activeInvestments.length === 0 && (
         <Card>
