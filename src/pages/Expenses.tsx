@@ -18,6 +18,7 @@ export default function Expenses() {
   const { expenses, addExpense, deleteExpense, stats } = useFinanceStore()
   const [isOpen, setIsOpen] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     category: '生活必需',
@@ -28,7 +29,7 @@ export default function Expenses() {
   // 常用金额
   const quickAmounts = [10, 20, 50, 100, 200]
 
-  // 时间筛选逻辑
+  // 时间和类型筛选逻辑
   const filteredExpenses = useMemo(() => {
     const now = new Date()
     now.setHours(0, 0, 0, 0)
@@ -37,25 +38,35 @@ export default function Expenses() {
       const expDate = new Date(exp.date)
       expDate.setHours(0, 0, 0, 0)
 
+      // 时间筛选
+      let timeMatch = true
       switch (timeFilter) {
         case 'today':
-          return expDate.getTime() === now.getTime()
+          timeMatch = expDate.getTime() === now.getTime()
+          break
 
         case 'week':
           const weekAgo = new Date(now)
           weekAgo.setDate(weekAgo.getDate() - 7)
-          return expDate >= weekAgo
+          timeMatch = expDate >= weekAgo
+          break
 
         case 'month':
           const monthAgo = new Date(now)
           monthAgo.setMonth(monthAgo.getMonth() - 1)
-          return expDate >= monthAgo
+          timeMatch = expDate >= monthAgo
+          break
 
         default:
-          return true
+          timeMatch = true
       }
+
+      // 类型筛选
+      const categoryMatch = categoryFilter === 'all' || exp.category === categoryFilter
+
+      return timeMatch && categoryMatch
     })
-  }, [expenses, timeFilter])
+  }, [expenses, timeFilter, categoryFilter])
 
   // 统计数据
   const statistics = useMemo(() => {
@@ -264,13 +275,69 @@ export default function Expenses() {
         </TabsList>
       </Tabs>
 
+      {/* 🏷️ 类型筛选 */}
+      <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <PieChart className="w-4 h-4 text-purple-600" />
+            <span className="text-sm font-semibold text-purple-900">按类型筛选</span>
+            {categoryFilter !== 'all' && (
+              <span className="text-xs text-purple-600 font-medium">
+                · {formatCurrency(statistics.total)}
+              </span>
+            )}
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <Button
+              variant={categoryFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCategoryFilter('all')}
+              className={categoryFilter === 'all' ? 'bg-purple-600 hover:bg-purple-700' : 'hover:bg-purple-50'}
+            >
+              全部类型
+            </Button>
+            {EXPENSE_CATEGORIES.map((cat) => {
+              const catExpenses = filteredExpenses.filter(e => e.category === cat.value)
+              const catTotal = catExpenses.reduce((sum, e) => sum + e.amount, 0)
+              const hasExpenses = timeFilter === 'all'
+                ? expenses.some(e => e.category === cat.value)
+                : catExpenses.length > 0
+
+              if (!hasExpenses) return null
+
+              return (
+                <Button
+                  key={cat.value}
+                  variant={categoryFilter === cat.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setCategoryFilter(cat.value)}
+                  className={categoryFilter === cat.value
+                    ? 'bg-purple-600 hover:bg-purple-700 whitespace-nowrap'
+                    : 'hover:bg-purple-50 whitespace-nowrap'
+                  }
+                >
+                  {cat.icon} {cat.label}
+                  {categoryFilter === 'all' && catTotal > 0 && (
+                    <span className="ml-1 text-xs opacity-75">
+                      ({catExpenses.length})
+                    </span>
+                  )}
+                </Button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 📈 支出统计卡片 */}
       <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-slate-600">总支出</span>
+              <span className="text-sm font-medium text-slate-600">
+                {categoryFilter === 'all' ? '总支出' : `${EXPENSE_CATEGORIES.find(c => c.value === categoryFilter)?.label}支出`}
+              </span>
             </div>
             <div className="text-2xl font-bold text-blue-600">
               {formatCurrency(statistics.total)}
