@@ -5,6 +5,8 @@ export interface Expense {
   category: string
   amount: number
   description: string
+  needsReimbursement?: boolean  // 是否需要报销
+  reimbursementId?: string      // 关联的报销记录ID
   createdAt: string
   updatedAt: string
 }
@@ -18,6 +20,7 @@ export interface Reimbursement {
   note: string
   status: 'pending' | 'reimbursed'
   reimbursedDate?: string
+  expenseId?: string            // 关联的支出记录ID
   createdAt: string
   updatedAt: string
 }

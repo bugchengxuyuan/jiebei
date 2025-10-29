@@ -20,12 +20,12 @@ interface FinanceStore {
   calculateStats: () => void
 
   // 支出相关
-  addExpense: (expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  addExpense: (expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
   updateExpense: (id: string, expense: Partial<Expense>) => Promise<void>
   deleteExpense: (id: string) => Promise<void>
 
   // 报销相关
-  addReimbursement: (reimb: Omit<Reimbursement, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  addReimbursement: (reimb: Omit<Reimbursement, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
   updateReimbursement: (id: string, reimb: Partial<Reimbursement>) => Promise<void>
   deleteReimbursement: (id: string) => Promise<void>
 
@@ -118,6 +118,7 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
       expenses: [...state.expenses, newExpense],
     }))
     get().calculateStats()
+    return newExpense.id
   },
 
   // 更新支出
@@ -137,10 +138,21 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
 
   // 删除支出
   deleteExpense: async (id) => {
+    const expense = get().expenses.find(exp => exp.id === id)
+
+    // 如果有关联的报销记录，先删除它
+    if (expense?.reimbursementId) {
+      await db.reimbursements.delete(expense.reimbursementId)
+      set(state => ({
+        reimbursements: state.reimbursements.filter(r => r.id !== expense.reimbursementId),
+      }))
+    }
+
     await db.expenses.delete(id)
     set(state => ({
       expenses: state.expenses.filter(exp => exp.id !== id),
     }))
+
     get().calculateStats()
   },
 
@@ -157,7 +169,16 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
     set(state => ({
       reimbursements: [...state.reimbursements, newReimb],
     }))
+
+    // 如果关联了支出记录，更新支出记录的 reimbursementId
+    if (newReimb.expenseId) {
+      await get().updateExpense(newReimb.expenseId, {
+        reimbursementId: newReimb.id,
+      })
+    }
+
     get().calculateStats()
+    return newReimb.id
   },
 
   // 更新报销
@@ -177,6 +198,24 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
 
   // 删除报销
   deleteReimbursement: async (id) => {
+    const reimbursement = get().reimbursements.find(r => r.id === id)
+
+    // 如果有关联的支出记录，清除其 reimbursementId 和 needsReimbursement
+    if (reimbursement?.expenseId) {
+      await db.expenses.update(reimbursement.expenseId, {
+        reimbursementId: undefined,
+        needsReimbursement: false,
+        updatedAt: new Date().toISOString(),
+      })
+      set(state => ({
+        expenses: state.expenses.map(exp =>
+          exp.id === reimbursement.expenseId
+            ? { ...exp, reimbursementId: undefined, needsReimbursement: false, updatedAt: new Date().toISOString() }
+            : exp
+        ),
+      }))
+    }
+
     await db.reimbursements.delete(id)
     set(state => ({
       reimbursements: state.reimbursements.filter(r => r.id !== id),

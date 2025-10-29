@@ -15,7 +15,7 @@ import type { Expense } from '@/store/types'
 type TimeFilter = 'today' | 'week' | 'month' | 'all'
 
 export default function Expenses() {
-  const { expenses, addExpense, deleteExpense, stats } = useFinanceStore()
+  const { expenses, addExpense, deleteExpense, addReimbursement, reimbursements, stats } = useFinanceStore()
   const [isOpen, setIsOpen] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -24,6 +24,7 @@ export default function Expenses() {
     category: '生活必需',
     amount: '',
     description: '',
+    needsReimbursement: false,
   })
 
   // 常用金额
@@ -123,17 +124,34 @@ export default function Expenses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await addExpense({
+
+    // 创建支出记录
+    const expenseId = await addExpense({
       date: formData.date,
       category: formData.category,
       amount: parseFloat(formData.amount),
       description: formData.description,
+      needsReimbursement: formData.needsReimbursement,
     })
+
+    // 如果需要报销，自动创建报销记录
+    if (formData.needsReimbursement && expenseId) {
+      await addReimbursement({
+        date: formData.date,
+        item: formData.description,
+        amount: parseFloat(formData.amount),
+        note: `${EXPENSE_CATEGORIES.find(c => c.value === formData.category)?.label || ''}支出`,
+        status: 'pending',
+        expenseId: expenseId,
+      })
+    }
+
     setFormData({
       date: new Date().toISOString().split('T')[0],
       category: '生活必需',
       amount: '',
       description: '',
+      needsReimbursement: false,
     })
     setIsOpen(false)
   }
@@ -156,6 +174,7 @@ export default function Expenses() {
       category: expense.category,
       amount: expense.amount.toString(),
       description: expense.description,
+      needsReimbursement: false,
     })
     setIsOpen(true)
   }
@@ -253,6 +272,18 @@ export default function Expenses() {
                   placeholder="支出说明"
                   required
                 />
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <input
+                  id="needsReimbursement"
+                  type="checkbox"
+                  checked={formData.needsReimbursement}
+                  onChange={(e) => setFormData({ ...formData, needsReimbursement: e.target.checked })}
+                  className="w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
+                />
+                <Label htmlFor="needsReimbursement" className="text-sm font-medium text-amber-900 cursor-pointer">
+                  💰 需要报销（将自动创建报销记录）
+                </Label>
               </div>
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">添加</Button>
@@ -499,6 +530,10 @@ export default function Expenses() {
         ) : (
           sortedFilteredExpenses.map((expense) => {
             const category = EXPENSE_CATEGORIES.find(c => c.value === expense.category)
+            const reimbursement = expense.reimbursementId
+              ? reimbursements.find(r => r.id === expense.reimbursementId)
+              : null
+
             return (
               <Card key={expense.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
@@ -506,7 +541,20 @@ export default function Expenses() {
                     <div className="flex items-center gap-3 flex-1">
                       <div className="text-2xl">{category?.icon || '📝'}</div>
                       <div className="flex-1">
-                        <div className="font-medium text-slate-800">{expense.description}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-slate-800">{expense.description}</span>
+                          {expense.needsReimbursement && (
+                            reimbursement?.status === 'reimbursed' ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                                ✓ 已报销
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                                💰 待报销
+                              </span>
+                            )
+                          )}
+                        </div>
                         <div className="text-xs text-slate-500">
                           {formatShortDate(expense.date)} · {category?.label || expense.category}
                         </div>
