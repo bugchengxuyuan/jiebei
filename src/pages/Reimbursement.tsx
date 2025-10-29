@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Plus, Check, Trash2, Clock, BarChart3, Calendar, Zap, Copy } from 'lucide-react'
+import { Plus, Check, Trash2, Clock, BarChart3, Calendar, Zap, Copy, Undo2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -104,6 +104,16 @@ export default function Reimbursement() {
   const handleDelete = async (id: string) => {
     if (window.confirm('确定要删除这条报销记录吗？')) {
       await deleteReimbursement(id)
+    }
+  }
+
+  // 撤销报销
+  const handleUndoReimbursement = async (id: string) => {
+    if (window.confirm('确定要撤销这条报销记录吗？将恢复为待报销状态。')) {
+      await updateReimbursement(id, {
+        status: 'pending',
+        reimbursedDate: undefined,
+      })
     }
   }
 
@@ -437,17 +447,27 @@ export default function Reimbursement() {
                           报销: {reimb.reimbursedDate ? formatShortDate(reimb.reimbursedDate) : '-'}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <div className="text-right">
                           <div className="font-bold text-lg text-green-600">
                             {formatCurrency(reimb.amount)}
                           </div>
                         </div>
                         <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleUndoReimbursement(reimb.id)}
+                          className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-200"
+                          title="撤销报销"
+                        >
+                          <Undo2 className="w-4 h-4" />
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(reimb.id)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="删除"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
