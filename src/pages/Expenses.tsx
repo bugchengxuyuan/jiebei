@@ -1,18 +1,23 @@
-import { useState } from 'react'
-import { Plus, Trash2, Copy, Zap } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Plus, Trash2, Copy, Zap, TrendingUp, PieChart, Calendar, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { formatCurrency, formatShortDate } from '@/utils/formatters'
 import { EXPENSE_CATEGORIES } from '@/utils/constants'
 import type { Expense } from '@/store/types'
 
+type TimeFilter = 'today' | 'week' | 'month' | 'all'
+
 export default function Expenses() {
   const { expenses, addExpense, deleteExpense, stats } = useFinanceStore()
   const [isOpen, setIsOpen] = useState(false)
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     category: '生活必需',
@@ -22,6 +27,84 @@ export default function Expenses() {
 
   // 常用金额
   const quickAmounts = [10, 20, 50, 100, 200]
+
+  // 时间筛选逻辑
+  const filteredExpenses = useMemo(() => {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+
+    return expenses.filter(exp => {
+      const expDate = new Date(exp.date)
+      expDate.setHours(0, 0, 0, 0)
+
+      switch (timeFilter) {
+        case 'today':
+          return expDate.getTime() === now.getTime()
+
+        case 'week':
+          const weekAgo = new Date(now)
+          weekAgo.setDate(weekAgo.getDate() - 7)
+          return expDate >= weekAgo
+
+        case 'month':
+          const monthAgo = new Date(now)
+          monthAgo.setMonth(monthAgo.getMonth() - 1)
+          return expDate >= monthAgo
+
+        default:
+          return true
+      }
+    })
+  }, [expenses, timeFilter])
+
+  // 统计数据
+  const statistics = useMemo(() => {
+    const total = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0)
+    const count = filteredExpenses.length
+    const avg = count > 0 ? total / count : 0
+    const max = count > 0 ? Math.max(...filteredExpenses.map(e => e.amount)) : 0
+
+    // 按分类统计
+    const byCategory = EXPENSE_CATEGORIES.map(cat => {
+      const categoryExpenses = filteredExpenses.filter(e => e.category === cat.value)
+      const amount = categoryExpenses.reduce((sum, e) => sum + e.amount, 0)
+      const percentage = total > 0 ? (amount / total) * 100 : 0
+      return {
+        ...cat,
+        amount,
+        count: categoryExpenses.length,
+        percentage
+      }
+    }).filter(c => c.count > 0).sort((a, b) => b.amount - a.amount)
+
+    // 最近7天趋势
+    const last7Days = []
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      date.setHours(0, 0, 0, 0)
+
+      const dayExpenses = expenses.filter(exp => {
+        const expDate = new Date(exp.date)
+        expDate.setHours(0, 0, 0, 0)
+        return expDate.getTime() === date.getTime()
+      })
+
+      last7Days.push({
+        date: date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' }),
+        amount: dayExpenses.reduce((sum, e) => sum + e.amount, 0)
+      })
+    }
+
+    return {
+      total,
+      count,
+      avg,
+      max,
+      byCategory,
+      last7Days
+    }
+  }, [filteredExpenses, expenses])
 
   const sortedExpenses = [...expenses].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -69,14 +152,18 @@ export default function Expenses() {
   // 获取最近5条支出
   const recentExpenses = sortedExpenses.slice(0, 5)
 
+  const sortedFilteredExpenses = [...filteredExpenses].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-20">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">支出记录</h1>
+          <h1 className="text-2xl font-bold text-slate-800">支出分析</h1>
           <p className="text-sm text-slate-500 mt-1">
-            总计: {formatCurrency(stats?.totalSpent || 0)}
+            全部: {formatCurrency(stats?.totalSpent || 0)}
           </p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -167,6 +254,121 @@ export default function Expenses() {
         </Dialog>
       </div>
 
+      {/* 📊 时间筛选 */}
+      <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as TimeFilter)}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="today">今天</TabsTrigger>
+          <TabsTrigger value="week">本周</TabsTrigger>
+          <TabsTrigger value="month">本月</TabsTrigger>
+          <TabsTrigger value="all">全部</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* 📈 支出统计卡片 */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-slate-600">总支出</span>
+            </div>
+            <div className="text-2xl font-bold text-blue-600">
+              {formatCurrency(statistics.total)}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              共 {statistics.count} 笔
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-slate-600">平均消费</span>
+            </div>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(statistics.avg)}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              最高 {formatCurrency(statistics.max)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 📊 分类支出统计 */}
+      {statistics.byCategory.length > 0 && (
+        <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <PieChart className="w-5 h-5 text-indigo-600" />
+              分类统计
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {statistics.byCategory.map((cat) => (
+                <div key={cat.value} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{cat.icon}</span>
+                      <span className="font-medium text-slate-700">{cat.label}</span>
+                      <span className="text-xs text-slate-500">({cat.count}笔)</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-slate-800">
+                        {formatCurrency(cat.amount)}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {cat.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <Progress value={cat.percentage} className="h-2" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 📅 最近7天趋势 */}
+      <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-orange-600" />
+            最近7天趋势
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {statistics.last7Days.map((day, index) => {
+              const maxAmount = Math.max(...statistics.last7Days.map(d => d.amount))
+              const percentage = maxAmount > 0 ? (day.amount / maxAmount) * 100 : 0
+              return (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="text-xs font-medium text-slate-600 w-12">
+                    {day.date}
+                  </div>
+                  <div className="flex-1">
+                    <div className="h-6 bg-orange-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-orange-500 transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm font-bold text-slate-700 w-20 text-right">
+                    {formatCurrency(day.amount)}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* ⚡ 快速记账 - 最近消费 */}
       {recentExpenses.length > 0 && (
         <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
@@ -216,14 +418,19 @@ export default function Expenses() {
 
       {/* 支出列表 */}
       <div className="space-y-2">
-        {sortedExpenses.length === 0 ? (
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold text-slate-800">
+            支出明细 ({sortedFilteredExpenses.length})
+          </h3>
+        </div>
+        {sortedFilteredExpenses.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center text-slate-500">
-              暂无支出记录
+              {timeFilter === 'all' ? '暂无支出记录' : '该时间段暂无支出'}
             </CardContent>
           </Card>
         ) : (
-          sortedExpenses.map((expense) => {
+          sortedFilteredExpenses.map((expense) => {
             const category = EXPENSE_CATEGORIES.find(c => c.value === expense.category)
             return (
               <Card key={expense.id} className="hover:shadow-md transition-shadow">
