@@ -4,13 +4,14 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Wallet, Clock, DollarSign, AlertTriangle, TrendingUp, Receipt, Calculator, CheckCircle, XCircle, Calendar } from 'lucide-react'
+import { Wallet, Clock, DollarSign, AlertTriangle, TrendingUp, Receipt, Calculator, CheckCircle, XCircle, Calendar, Download } from 'lucide-react'
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import { daysUntil, getHealthStatus } from '@/utils/calculations'
+import { exportAllData } from '@/utils/exportData'
 
 export default function Dashboard() {
-  const { stats, config, expenses } = useFinanceStore()
+  const { stats, config, expenses, reimbursements, investments } = useFinanceStore()
   const [checkAmount, setCheckAmount] = useState('')
   const [checkResult, setCheckResult] = useState<{ safe: boolean; remaining: number } | null>(null)
 
@@ -60,11 +61,21 @@ export default function Dashboard() {
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto">
       {/* 页面标题 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">财务仪表盘</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          {formatDate(new Date().toISOString())}
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">财务仪表盘</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {formatDate(new Date().toISOString())}
+          </p>
+        </div>
+        <Button
+          onClick={() => exportAllData(expenses, reimbursements, investments, stats)}
+          className="flex items-center gap-2"
+          variant="outline"
+        >
+          <Download className="w-4 h-4" />
+          <span className="hidden sm:inline">导出数据</span>
+        </Button>
       </div>
 
       {/* 💰 消费前检查器 */}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Plus, Trash2, Copy, Zap, TrendingUp, PieChart, Calendar, BarChart3 } from 'lucide-react'
+import { Plus, Trash2, Copy, Zap, TrendingUp, PieChart, Calendar, BarChart3, Edit } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,8 +15,9 @@ import type { Expense } from '@/store/types'
 type TimeFilter = 'today' | 'week' | 'month' | 'all'
 
 export default function Expenses() {
-  const { expenses, addExpense, deleteExpense, addReimbursement, reimbursements, stats } = useFinanceStore()
+  const { expenses, addExpense, updateExpense, deleteExpense, addReimbursement, updateReimbursement, reimbursements, stats } = useFinanceStore()
   const [isOpen, setIsOpen] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [formData, setFormData] = useState({
@@ -125,25 +126,46 @@ export default function Expenses() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // 创建支出记录
-    const expenseId = await addExpense({
-      date: formData.date,
-      category: formData.category,
-      amount: parseFloat(formData.amount),
-      description: formData.description,
-      needsReimbursement: formData.needsReimbursement,
-    })
-
-    // 如果需要报销，自动创建报销记录
-    if (formData.needsReimbursement && expenseId) {
-      await addReimbursement({
+    if (editingExpense) {
+      // 编辑模式：更新支出记录
+      await updateExpense(editingExpense.id, {
         date: formData.date,
-        item: formData.description,
+        category: formData.category,
         amount: parseFloat(formData.amount),
-        note: `${EXPENSE_CATEGORIES.find(c => c.value === formData.category)?.label || ''}支出`,
-        status: 'pending',
-        expenseId: expenseId,
+        description: formData.description,
+        needsReimbursement: formData.needsReimbursement,
       })
+
+      // 同步更新关联的报销记录
+      if (editingExpense.reimbursementId) {
+        await updateReimbursement(editingExpense.reimbursementId, {
+          date: formData.date,
+          item: formData.description,
+          amount: parseFloat(formData.amount),
+          note: `${EXPENSE_CATEGORIES.find(c => c.value === formData.category)?.label || ''}支出`,
+        })
+      }
+    } else {
+      // 添加模式：创建支出记录
+      const expenseId = await addExpense({
+        date: formData.date,
+        category: formData.category,
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        needsReimbursement: formData.needsReimbursement,
+      })
+
+      // 如果需要报销，自动创建报销记录
+      if (formData.needsReimbursement && expenseId) {
+        await addReimbursement({
+          date: formData.date,
+          item: formData.description,
+          amount: parseFloat(formData.amount),
+          note: `${EXPENSE_CATEGORIES.find(c => c.value === formData.category)?.label || ''}支出`,
+          status: 'pending',
+          expenseId: expenseId,
+        })
+      }
     }
 
     setFormData({
@@ -153,6 +175,7 @@ export default function Expenses() {
       description: '',
       needsReimbursement: false,
     })
+    setEditingExpense(null)
     setIsOpen(false)
   }
 
@@ -160,6 +183,19 @@ export default function Expenses() {
     if (window.confirm('确定要删除这条支出记录吗？')) {
       await deleteExpense(id)
     }
+  }
+
+  // 编辑支出
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense)
+    setFormData({
+      date: expense.date,
+      category: expense.category,
+      amount: expense.amount.toString(),
+      description: expense.description,
+      needsReimbursement: expense.needsReimbursement || false,
+    })
+    setIsOpen(true)
   }
 
   // 快速设置金额
@@ -196,7 +232,19 @@ export default function Expenses() {
             全部: {formatCurrency(stats?.totalSpent || 0)}
           </p>
         </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+          setIsOpen(open)
+          if (!open) {
+            setEditingExpense(null)
+            setFormData({
+              date: new Date().toISOString().split('T')[0],
+              category: '生活必需',
+              amount: '',
+              description: '',
+              needsReimbursement: false,
+            })
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -205,7 +253,7 @@ export default function Expenses() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>添加支出</DialogTitle>
+              <DialogTitle>{editingExpense ? '编辑支出' : '添加支出'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -560,7 +608,7 @@ export default function Expenses() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="text-right">
                         <div className="font-bold text-lg text-red-600">
                           -{formatCurrency(expense.amount)}
@@ -569,8 +617,18 @@ export default function Expenses() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditExpense(expense)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        title="编辑"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleDelete(expense.id)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="删除"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
