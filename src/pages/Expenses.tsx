@@ -1,16 +1,16 @@
 import { useState, useMemo } from 'react'
-import { Plus, Trash2, Copy, Zap, TrendingUp, PieChart, Calendar, BarChart3, Edit } from 'lucide-react'
+import { Plus, Trash2, Copy, Zap, TrendingUp, PieChart as PieChartIcon, Calendar, BarChart3, Edit } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { formatCurrency, formatShortDate } from '@/utils/formatters'
 import { EXPENSE_CATEGORIES } from '@/utils/constants'
 import type { Expense } from '@/store/types'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 
 type TimeFilter = 'today' | 'week' | 'month' | 'all'
 
@@ -448,32 +448,68 @@ export default function Expenses() {
         <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-indigo-600" />
-              分类统计
+              <PieChartIcon className="w-5 h-5 text-indigo-600" />
+              分类支出占比
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {statistics.byCategory.map((cat) => (
-                <div key={cat.value} className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{cat.icon}</span>
-                      <span className="font-medium text-slate-700">{cat.label}</span>
-                      <span className="text-xs text-slate-500">({cat.count}笔)</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-slate-800">
-                        {formatCurrency(cat.amount)}
+            <div className="flex flex-col lg:flex-row items-center gap-6">
+              {/* 饼图 */}
+              <div className="w-full lg:w-1/2 h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statistics.byCategory}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${entry.label} ${entry.percentage.toFixed(0)}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="amount"
+                    >
+                      {statistics.byCategory.map((_entry, index) => {
+                        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+                        return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                      })}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* 图例和详情 */}
+              <div className="flex-1 w-full space-y-2">
+                {statistics.byCategory.map((cat, index) => {
+                  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+                  return (
+                    <div key={cat.value} className="flex items-center justify-between p-2 bg-white rounded-lg">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: colors[index % colors.length] }}
+                        />
+                        <span className="text-xl">{cat.icon}</span>
+                        <div className="flex-1">
+                          <div className="font-medium text-slate-800">{cat.label}</div>
+                          <div className="text-xs text-slate-500">{cat.count} 笔</div>
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-500">
-                        {cat.percentage.toFixed(1)}%
+                      <div className="text-right">
+                        <div className="font-bold text-slate-800">
+                          {formatCurrency(cat.amount)}
+                        </div>
+                        <div className="text-xs text-indigo-600 font-medium">
+                          {cat.percentage.toFixed(1)}%
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <Progress value={cat.percentage} className="h-2" />
-                </div>
-              ))}
+                  )
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>

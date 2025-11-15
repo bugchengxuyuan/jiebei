@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Wallet, Clock, DollarSign, AlertTriangle, TrendingUp, Receipt, Calculator, CheckCircle, XCircle, Calendar, Download } from 'lucide-react'
+import { Wallet, Clock, DollarSign, AlertTriangle, TrendingUp, Receipt, Calculator, CheckCircle, XCircle, Calendar, Download, PieChart as PieChartIcon, Activity } from 'lucide-react'
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import { daysUntil, getHealthStatus } from '@/utils/calculations'
 import { exportAllData } from '@/utils/exportData'
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts'
 
 export default function Dashboard() {
   const { stats, config, expenses, reimbursements, investments } = useFinanceStore()
@@ -43,6 +44,37 @@ export default function Dashboard() {
   })
   const todaySpent = todayExpenses.reduce((sum, exp) => sum + exp.amount, 0)
   const todayRemaining = dailyBudget - todaySpent
+
+  // 借呗使用率数据（环形图）
+  const jiebeiUsageData = useMemo(() => {
+    return [
+      { name: '已使用', value: stats.totalSpent, color: '#ef4444' },
+      { name: '剩余额度', value: stats.remainingJiebei, color: '#22c55e' }
+    ]
+  }, [stats.totalSpent, stats.remainingJiebei])
+
+  // 近30天消费趋势数据
+  const last30DaysTrend = useMemo(() => {
+    const data = []
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      date.setHours(0, 0, 0, 0)
+
+      const dayExpenses = expenses.filter(exp => {
+        const expDate = new Date(exp.date)
+        expDate.setHours(0, 0, 0, 0)
+        return expDate.getTime() === date.getTime()
+      })
+
+      data.push({
+        date: `${date.getMonth() + 1}/${date.getDate()}`,
+        amount: dayExpenses.reduce((sum, e) => sum + e.amount, 0),
+        count: dayExpenses.length
+      })
+    }
+    return data
+  }, [expenses])
 
   // 消费前检查
   const handleCheckExpense = () => {
@@ -204,6 +236,111 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 📊 数据可视化区域 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* 借呗使用率环形图 */}
+        <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <PieChartIcon className="w-5 h-5 text-indigo-600" />
+              借呗额度使用率
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-full md:w-1/2 h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={jiebeiUsageData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {jiebeiUsageData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-sm text-slate-600">已使用</span>
+                  </div>
+                  <span className="font-bold text-slate-800">{formatCurrency(stats.totalSpent)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm text-slate-600">剩余额度</span>
+                  </div>
+                  <span className="font-bold text-slate-800">{formatCurrency(stats.remainingJiebei)}</span>
+                </div>
+                <div className="pt-3 border-t border-indigo-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">使用率</span>
+                    <span className="font-bold text-indigo-600">
+                      {((stats.totalSpent / config.jiebeiTotal) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 近30天消费趋势图 */}
+        <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-600" />
+              近30天消费趋势
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={last30DaysTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 12 }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `¥${value}`}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [`${formatCurrency(value)}`, '消费金额']}
+                    labelFormatter={(label) => `日期: ${label}`}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                    name="消费金额"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* 倒计时 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
