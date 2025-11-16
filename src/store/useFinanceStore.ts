@@ -1,5 +1,16 @@
 import { create } from 'zustand'
-import { Expense, Reimbursement, Investment, FinanceConfig, FinanceStats } from './types'
+import {
+  Expense,
+  Reimbursement,
+  Investment,
+  FinanceConfig,
+  FinanceStats,
+  Tag,
+  AccountBook,
+  Budget,
+  ExpenseTemplate,
+  RecurringExpense
+} from './types'
 import { db } from '@/db/database'
 
 interface FinanceStore {
@@ -8,6 +19,11 @@ interface FinanceStore {
   reimbursements: Reimbursement[]
   investments: Investment[]
   config: FinanceConfig | null
+  tags: Tag[]
+  accountBooks: AccountBook[]
+  budgets: Budget[]
+  expenseTemplates: ExpenseTemplate[]
+  recurringExpenses: RecurringExpense[]
 
   // 统计
   stats: FinanceStats | null
@@ -36,6 +52,34 @@ interface FinanceStore {
 
   // 配置相关
   updateConfig: (config: Partial<FinanceConfig>) => Promise<void>
+
+  // 标签相关
+  addTag: (tag: Omit<Tag, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
+  updateTag: (id: string, tag: Partial<Tag>) => Promise<void>
+  deleteTag: (id: string) => Promise<void>
+
+  // 账本相关
+  addAccountBook: (book: Omit<AccountBook, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
+  updateAccountBook: (id: string, book: Partial<AccountBook>) => Promise<void>
+  deleteAccountBook: (id: string) => Promise<void>
+  setDefaultAccountBook: (id: string) => Promise<void>
+
+  // 预算相关
+  addBudget: (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
+  updateBudget: (id: string, budget: Partial<Budget>) => Promise<void>
+  deleteBudget: (id: string) => Promise<void>
+
+  // 支出模板相关
+  addExpenseTemplate: (template: Omit<ExpenseTemplate, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
+  updateExpenseTemplate: (id: string, template: Partial<ExpenseTemplate>) => Promise<void>
+  deleteExpenseTemplate: (id: string) => Promise<void>
+
+  // 周期性支出相关
+  addRecurringExpense: (recurring: Omit<RecurringExpense, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
+  updateRecurringExpense: (id: string, recurring: Partial<RecurringExpense>) => Promise<void>
+  deleteRecurringExpense: (id: string) => Promise<void>
+  executeRecurringExpense: (id: string) => Promise<void>
+  checkAndExecuteRecurring: () => Promise<void>
 }
 
 export const useFinanceStore = create<FinanceStore>((set, get) => ({
@@ -43,17 +87,37 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
   reimbursements: [],
   investments: [],
   config: null,
+  tags: [],
+  accountBooks: [],
+  budgets: [],
+  expenseTemplates: [],
+  recurringExpenses: [],
   stats: null,
   isLoading: true,
 
   // 加载所有数据
   loadData: async () => {
     try {
-      const [expenses, reimbursements, investments, config] = await Promise.all([
+      const [
+        expenses,
+        reimbursements,
+        investments,
+        config,
+        tags,
+        accountBooks,
+        budgets,
+        expenseTemplates,
+        recurringExpenses
+      ] = await Promise.all([
         db.expenses.toArray(),
         db.reimbursements.toArray(),
         db.investments.toArray(),
         db.config.get('main'),
+        db.tags.toArray(),
+        db.accountBooks.toArray(),
+        db.budgets.toArray(),
+        db.expenseTemplates.toArray(),
+        db.recurringExpenses.toArray(),
       ])
 
       set({
@@ -61,10 +125,18 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
         reimbursements,
         investments,
         config: config || null,
+        tags,
+        accountBooks,
+        budgets,
+        expenseTemplates,
+        recurringExpenses,
         isLoading: false,
       })
 
       get().calculateStats()
+
+      // 检查并执行周期性支出
+      await get().checkAndExecuteRecurring()
     } catch (error) {
       console.error('Failed to load data:', error)
       set({ isLoading: false })
@@ -270,5 +342,325 @@ export const useFinanceStore = create<FinanceStore>((set, get) => ({
       config: state.config ? { ...state.config, ...configUpdate } : null,
     }))
     get().calculateStats()
+  },
+
+  // ===== 标签相关 =====
+  addTag: async (tag) => {
+    const newTag: Tag = {
+      ...tag,
+      id: `tag_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await db.tags.add(newTag)
+    set(state => ({
+      tags: [...state.tags, newTag],
+    }))
+    return newTag.id
+  },
+
+  updateTag: async (id, tag) => {
+    await db.tags.update(id, {
+      ...tag,
+      updatedAt: new Date().toISOString(),
+    })
+
+    set(state => ({
+      tags: state.tags.map(t =>
+        t.id === id ? { ...t, ...tag, updatedAt: new Date().toISOString() } : t
+      ),
+    }))
+  },
+
+  deleteTag: async (id) => {
+    // 删除标签时，需要从所有使用该标签的支出中移除
+    const tagToDelete = get().tags.find(t => t.id === id)
+    if (tagToDelete) {
+      const expensesWithTag = get().expenses.filter(exp =>
+        exp.tags?.includes(tagToDelete.name)
+      )
+
+      for (const expense of expensesWithTag) {
+        await get().updateExpense(expense.id, {
+          tags: expense.tags?.filter(t => t !== tagToDelete.name),
+        })
+      }
+    }
+
+    await db.tags.delete(id)
+    set(state => ({
+      tags: state.tags.filter(t => t.id !== id),
+    }))
+  },
+
+  // ===== 账本相关 =====
+  addAccountBook: async (book) => {
+    const newBook: AccountBook = {
+      ...book,
+      id: `book_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await db.accountBooks.add(newBook)
+    set(state => ({
+      accountBooks: [...state.accountBooks, newBook],
+    }))
+
+    // 如果这是第一个账本，自动设置为默认
+    if (get().accountBooks.length === 1) {
+      await get().setDefaultAccountBook(newBook.id)
+    }
+
+    return newBook.id
+  },
+
+  updateAccountBook: async (id, book) => {
+    await db.accountBooks.update(id, {
+      ...book,
+      updatedAt: new Date().toISOString(),
+    })
+
+    set(state => ({
+      accountBooks: state.accountBooks.map(b =>
+        b.id === id ? { ...b, ...book, updatedAt: new Date().toISOString() } : b
+      ),
+    }))
+  },
+
+  deleteAccountBook: async (id) => {
+    const book = get().accountBooks.find(b => b.id === id)
+
+    // 不允许删除默认账本
+    if (book?.isDefault) {
+      throw new Error('不能删除默认账本')
+    }
+
+    // 删除账本时，将该账本下的所有支出移到默认账本
+    const defaultBook = get().accountBooks.find(b => b.isDefault)
+    if (defaultBook) {
+      const expensesInBook = get().expenses.filter(exp => exp.accountBookId === id)
+      for (const expense of expensesInBook) {
+        await get().updateExpense(expense.id, {
+          accountBookId: defaultBook.id,
+        })
+      }
+    }
+
+    await db.accountBooks.delete(id)
+    set(state => ({
+      accountBooks: state.accountBooks.filter(b => b.id !== id),
+    }))
+  },
+
+  setDefaultAccountBook: async (id) => {
+    // 取消其他账本的默认状态
+    const books = get().accountBooks
+    for (const book of books) {
+      if (book.isDefault && book.id !== id) {
+        await get().updateAccountBook(book.id, { isDefault: false })
+      }
+    }
+
+    // 设置新的默认账本
+    await get().updateAccountBook(id, { isDefault: true })
+
+    // 更新配置
+    await get().updateConfig({ currentAccountBookId: id })
+  },
+
+  // ===== 预算相关 =====
+  addBudget: async (budget) => {
+    const newBudget: Budget = {
+      ...budget,
+      id: `budget_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await db.budgets.add(newBudget)
+    set(state => ({
+      budgets: [...state.budgets, newBudget],
+    }))
+    return newBudget.id
+  },
+
+  updateBudget: async (id, budget) => {
+    await db.budgets.update(id, {
+      ...budget,
+      updatedAt: new Date().toISOString(),
+    })
+
+    set(state => ({
+      budgets: state.budgets.map(b =>
+        b.id === id ? { ...b, ...budget, updatedAt: new Date().toISOString() } : b
+      ),
+    }))
+  },
+
+  deleteBudget: async (id) => {
+    await db.budgets.delete(id)
+    set(state => ({
+      budgets: state.budgets.filter(b => b.id !== id),
+    }))
+  },
+
+  // ===== 支出模板相关 =====
+  addExpenseTemplate: async (template) => {
+    const newTemplate: ExpenseTemplate = {
+      ...template,
+      id: `template_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await db.expenseTemplates.add(newTemplate)
+    set(state => ({
+      expenseTemplates: [...state.expenseTemplates, newTemplate],
+    }))
+    return newTemplate.id
+  },
+
+  updateExpenseTemplate: async (id, template) => {
+    await db.expenseTemplates.update(id, {
+      ...template,
+      updatedAt: new Date().toISOString(),
+    })
+
+    set(state => ({
+      expenseTemplates: state.expenseTemplates.map(t =>
+        t.id === id ? { ...t, ...template, updatedAt: new Date().toISOString() } : t
+      ),
+    }))
+  },
+
+  deleteExpenseTemplate: async (id) => {
+    await db.expenseTemplates.delete(id)
+    set(state => ({
+      expenseTemplates: state.expenseTemplates.filter(t => t.id !== id),
+    }))
+  },
+
+  // ===== 周期性支出相关 =====
+  addRecurringExpense: async (recurring) => {
+    const newRecurring: RecurringExpense = {
+      ...recurring,
+      id: `recurring_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await db.recurringExpenses.add(newRecurring)
+    set(state => ({
+      recurringExpenses: [...state.recurringExpenses, newRecurring],
+    }))
+    return newRecurring.id
+  },
+
+  updateRecurringExpense: async (id, recurring) => {
+    await db.recurringExpenses.update(id, {
+      ...recurring,
+      updatedAt: new Date().toISOString(),
+    })
+
+    set(state => ({
+      recurringExpenses: state.recurringExpenses.map(r =>
+        r.id === id ? { ...r, ...recurring, updatedAt: new Date().toISOString() } : r
+      ),
+    }))
+  },
+
+  deleteRecurringExpense: async (id) => {
+    await db.recurringExpenses.delete(id)
+    set(state => ({
+      recurringExpenses: state.recurringExpenses.filter(r => r.id !== id),
+    }))
+  },
+
+  // 执行周期性支出（创建支出记录）
+  executeRecurringExpense: async (id) => {
+    const recurring = get().recurringExpenses.find(r => r.id === id)
+    if (!recurring || !recurring.enabled) return
+
+    const today = new Date().toISOString().split('T')[0]
+
+    // 创建支出记录
+    await get().addExpense({
+      date: today,
+      category: recurring.category,
+      amount: recurring.amount,
+      description: `[周期性] ${recurring.description}`,
+      needsReimbursement: false,
+    })
+
+    // 更新最后执行时间
+    await get().updateRecurringExpense(id, {
+      lastExecuted: today,
+    })
+  },
+
+  // 检查并执行所有到期的周期性支出
+  checkAndExecuteRecurring: async () => {
+    const recurringExpenses = get().recurringExpenses.filter(r => r.enabled)
+    const today = new Date()
+
+    for (const recurring of recurringExpenses) {
+      let shouldExecute = false
+      const lastExecuted = recurring.lastExecuted ? new Date(recurring.lastExecuted) : null
+
+      switch (recurring.frequency) {
+        case 'daily':
+          // 每天执行
+          if (!lastExecuted || lastExecuted.toDateString() !== today.toDateString()) {
+            shouldExecute = true
+          }
+          break
+
+        case 'weekly':
+          // 每周特定星期几执行
+          if (recurring.dayOfWeek !== undefined && today.getDay() === recurring.dayOfWeek) {
+            if (!lastExecuted || today.getTime() - lastExecuted.getTime() > 6 * 24 * 60 * 60 * 1000) {
+              shouldExecute = true
+            }
+          }
+          break
+
+        case 'monthly':
+          // 每月特定日期执行
+          if (recurring.dayOfMonth !== undefined && today.getDate() === recurring.dayOfMonth) {
+            if (!lastExecuted || lastExecuted.getMonth() !== today.getMonth()) {
+              shouldExecute = true
+            }
+          }
+          break
+
+        case 'yearly':
+          // 每年特定月份和日期执行
+          if (
+            recurring.monthOfYear !== undefined &&
+            recurring.dayOfMonth !== undefined &&
+            today.getMonth() + 1 === recurring.monthOfYear &&
+            today.getDate() === recurring.dayOfMonth
+          ) {
+            if (!lastExecuted || lastExecuted.getFullYear() !== today.getFullYear()) {
+              shouldExecute = true
+            }
+          }
+          break
+      }
+
+      // 检查是否在有效期内
+      if (shouldExecute) {
+        const startDate = new Date(recurring.startDate)
+        const endDate = recurring.endDate ? new Date(recurring.endDate) : null
+
+        if (today >= startDate && (!endDate || today <= endDate)) {
+          if (recurring.autoCreate) {
+            await get().executeRecurringExpense(recurring.id)
+          }
+        }
+      }
+    }
   },
 }))
