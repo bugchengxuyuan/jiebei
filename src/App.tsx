@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Home, Receipt, Calendar, TrendingUp, FileText } from 'lucide-react'
+import { Home, Receipt, Calendar, TrendingUp, FileText, Settings as SettingsIcon } from 'lucide-react'
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { initializeDatabase } from '@/db/initialData'
 import Dashboard from '@/pages/Dashboard'
@@ -7,8 +7,9 @@ import Expenses from '@/pages/Expenses'
 import Planning from '@/pages/Planning'
 import Investment from '@/pages/Investment'
 import Reimbursement from '@/pages/Reimbursement'
+import Settings from '@/pages/Settings'
 
-type PageId = 'dashboard' | 'expenses' | 'planning' | 'investment' | 'reimbursement'
+type PageId = 'dashboard' | 'expenses' | 'planning' | 'investment' | 'reimbursement' | 'settings'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('dashboard')
@@ -28,6 +29,7 @@ function App() {
     planning: Planning,
     investment: Investment,
     reimbursement: Reimbursement,
+    settings: Settings,
   }
 
   const CurrentPageComponent = pages[currentPage]
@@ -38,6 +40,7 @@ function App() {
     { id: 'planning' as PageId, icon: Calendar, label: '规划' },
     { id: 'investment' as PageId, icon: TrendingUp, label: '资产' },
     { id: 'reimbursement' as PageId, icon: FileText, label: '报销' },
+    { id: 'settings' as PageId, icon: SettingsIcon, label: '设置' },
   ]
 
   if (isLoading) {

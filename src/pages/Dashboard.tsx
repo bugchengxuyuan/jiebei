@@ -8,7 +8,7 @@ import { Wallet, Clock, DollarSign, AlertTriangle, TrendingUp, Receipt, Calculat
 import { useFinanceStore } from '@/store/useFinanceStore'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import { daysUntil } from '@/utils/calculations'
-import { exportAllData } from '@/utils/exportData'
+import { exportAllData, exportAllDataToExcel, exportAllDataToPDF } from '@/utils/exportData'
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts'
 import { calculateHealthScore, compareWithYesterday, compareWithLastWeek, generateSmartInsights } from '@/utils/insights'
 
@@ -16,6 +16,18 @@ export default function Dashboard() {
   const { stats, config, expenses, reimbursements, investments } = useFinanceStore()
   const [checkAmount, setCheckAmount] = useState('')
   const [checkResult, setCheckResult] = useState<{ safe: boolean; remaining: number } | null>(null)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+
+  const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
+    if (format === 'csv') {
+      exportAllData(expenses, reimbursements, investments, stats)
+    } else if (format === 'excel') {
+      exportAllDataToExcel(expenses, reimbursements, investments, stats)
+    } else if (format === 'pdf') {
+      exportAllDataToPDF(expenses, reimbursements, investments, stats)
+    }
+    setShowExportMenu(false)
+  }
 
   if (!stats || !config) {
     return (
@@ -142,14 +154,38 @@ export default function Dashboard() {
             {formatDate(new Date().toISOString())}
           </p>
         </div>
-        <Button
-          onClick={() => exportAllData(expenses, reimbursements, investments, stats)}
-          className="flex items-center gap-2"
-          variant="outline"
-        >
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">导出数据</span>
-        </Button>
+        <div className="relative">
+          <Button
+            onClick={() => setShowExportMenu(!showExportMenu)}
+            className="flex items-center gap-2"
+            variant="outline"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">导出数据</span>
+          </Button>
+          {showExportMenu && (
+            <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+              <button
+                onClick={() => handleExport('csv')}
+                className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-t-lg text-sm text-slate-700"
+              >
+                导出为 CSV
+              </button>
+              <button
+                onClick={() => handleExport('excel')}
+                className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700"
+              >
+                导出为 Excel
+              </button>
+              <button
+                onClick={() => handleExport('pdf')}
+                className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-b-lg text-sm text-slate-700"
+              >
+                导出为 PDF
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 🎯 Hero Card - 财务健康评分 */}
