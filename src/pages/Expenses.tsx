@@ -326,22 +326,23 @@ export default function Expenses() {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto pb-20 md:pb-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto pb-20 md:pb-6 animate-in fade-in duration-700">
       {/* 页面标题 */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800">支出管理</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+            支出管理
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             全部: {formatCurrency(stats?.totalSpent || 0)} · {expenses.length} 笔记录
           </p>
         </div>
         <div className="flex gap-2">
           {batchMode && (
             <Button
-              variant="destructive"
               onClick={handleBatchDelete}
               disabled={selectedIds.size === 0}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
             >
               <Trash2 className="w-4 h-4" />
               删除 ({selectedIds.size})
@@ -353,6 +354,7 @@ export default function Expenses() {
               setBatchMode(!batchMode)
               setSelectedIds(new Set())
             }}
+            className="border-2 border-slate-300 dark:border-slate-600 hover:border-violet-400 dark:hover:border-violet-500 dark:bg-slate-800 dark:text-slate-200 transition-all duration-300"
           >
             {batchMode ? '取消批量' : '批量操作'}
           </Button>
@@ -361,33 +363,36 @@ export default function Expenses() {
             if (!open) resetForm()
           }}>
             <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
+              <Button className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
                 <Plus className="w-4 h-4" />
                 添加支出
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 dark:border-slate-700">
               <DialogHeader>
-                <DialogTitle>{editingExpense ? '编辑支出' : '添加支出'}</DialogTitle>
+                <DialogTitle className="text-slate-900 dark:text-slate-100">
+                  {editingExpense ? '编辑支出' : '添加支出'}
+                </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="date">日期</Label>
+                  <Label htmlFor="date" className="text-slate-700 dark:text-slate-300">日期</Label>
                   <Input
                     id="date"
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     required
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="category">分类</Label>
+                  <Label htmlFor="category" className="text-slate-700 dark:text-slate-300">分类</Label>
                   <select
                     id="category"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                     required
                   >
                     {EXPENSE_CATEGORIES.map((cat) => (
@@ -398,7 +403,7 @@ export default function Expenses() {
                   </select>
                 </div>
                 <div>
-                  <Label htmlFor="description">说明</Label>
+                  <Label htmlFor="description" className="text-slate-700 dark:text-slate-300">说明</Label>
                   <Input
                     id="description"
                     type="text"
@@ -407,6 +412,7 @@ export default function Expenses() {
                     placeholder="支出说明"
                     required
                     autoComplete="off"
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                   {descriptionSuggestions.length > 0 && (
                     <div className="mt-2 space-y-1">
@@ -416,7 +422,7 @@ export default function Expenses() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="mr-2 text-xs"
+                          className="mr-2 text-xs dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
                           onClick={() => setFormData({ ...formData, description: suggestion })}
                         >
                           {suggestion}
@@ -426,9 +432,9 @@ export default function Expenses() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="amount">金额</Label>
+                  <Label htmlFor="amount" className="text-slate-700 dark:text-slate-300">金额</Label>
                   {amountRecommendation && (
-                    <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                    <div className="mb-2 p-2 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950 border border-cyan-200 dark:border-cyan-800 rounded text-xs text-cyan-800 dark:text-cyan-200">
                       <Lightbulb className="w-3 h-3 inline mr-1" />
                       建议金额: ¥{amountRecommendation.mode} (常见) |
                       平均: ¥{amountRecommendation.avg.toFixed(0)} |
@@ -444,7 +450,9 @@ export default function Expenses() {
                           variant="outline"
                           size="sm"
                           onClick={() => setQuickAmount(amount)}
-                          className={formData.amount === amount.toString() ? 'bg-blue-100 border-blue-300' : ''}
+                          className={formData.amount === amount.toString()
+                            ? 'bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900 dark:to-indigo-900 border-violet-300 dark:border-violet-600'
+                            : 'dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300'}
                         >
                           ¥{amount}
                         </Button>
@@ -455,7 +463,7 @@ export default function Expenses() {
                           variant="outline"
                           size="sm"
                           onClick={() => setQuickAmount(amountRecommendation.mode)}
-                          className="bg-green-50 border-green-300"
+                          className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950 border-emerald-300 dark:border-emerald-700"
                         >
                           ¥{amountRecommendation.mode} ⭐
                         </Button>
@@ -469,20 +477,22 @@ export default function Expenses() {
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                       placeholder="或输入自定义金额"
                       required
+                      className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="note">备注（可选）</Label>
+                  <Label htmlFor="note" className="text-slate-700 dark:text-slate-300">备注（可选）</Label>
                   <Input
                     id="note"
                     type="text"
                     value={formData.note}
                     onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                     placeholder="添加备注信息"
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                 </div>
-                <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <input
                     id="needsReimbursement"
                     type="checkbox"
@@ -490,15 +500,15 @@ export default function Expenses() {
                     onChange={(e) => setFormData({ ...formData, needsReimbursement: e.target.checked })}
                     className="w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
                   />
-                  <Label htmlFor="needsReimbursement" className="text-sm font-medium text-amber-900 cursor-pointer">
+                  <Label htmlFor="needsReimbursement" className="text-sm font-medium text-amber-900 dark:text-amber-100 cursor-pointer">
                     💰 需要报销（将自动创建报销记录）
                   </Label>
                 </div>
                 <div className="flex gap-2">
-                  <Button type="submit" className="flex-1">
+                  <Button type="submit" className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
                     {editingExpense ? '保存' : '添加'}
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200">
                     取消
                   </Button>
                 </div>
@@ -510,9 +520,9 @@ export default function Expenses() {
 
       {/* 异常检测提示 */}
       {anomalies.length > 0 && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
+        <Alert className="border-orange-200 dark:border-orange-800 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950 animate-in slide-in-from-top duration-500">
+          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <AlertDescription className="text-orange-800 dark:text-orange-200">
             <div className="font-semibold mb-1">检测到 {anomalies.length} 条异常提示</div>
             <div className="text-sm space-y-1">
               {anomalies.slice(0, 3).map((anomaly, idx) => (
@@ -524,24 +534,24 @@ export default function Expenses() {
       )}
 
       {/* 搜索栏 */}
-      <Card className="border-2 border-slate-200">
+      <Card className="border-2 border-slate-200 dark:border-slate-700 backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 shadow-lg hover:shadow-xl transition-all duration-300">
         <CardContent className="pt-4 pb-4">
           <div className="space-y-3">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                 <Input
                   type="text"
                   placeholder="搜索支出描述或类别..."
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-500"
                 />
               </div>
               <Button
                 variant="outline"
                 onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-2 border-slate-300 dark:border-slate-600 hover:border-cyan-400 dark:hover:border-cyan-500 dark:bg-slate-800 dark:text-slate-200 transition-all duration-300"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 高级筛选
@@ -550,39 +560,43 @@ export default function Expenses() {
             </div>
 
             {showAdvancedFilter && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t dark:border-slate-700 animate-in slide-in-from-top duration-300">
                 <div>
-                  <Label className="text-xs">最小金额</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">最小金额</Label>
                   <Input
                     type="number"
                     placeholder="¥0"
                     value={minAmount}
                     onChange={(e) => setMinAmount(e.target.value)}
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">最大金额</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">最大金额</Label>
                   <Input
                     type="number"
                     placeholder="¥999999"
                     value={maxAmount}
                     onChange={(e) => setMaxAmount(e.target.value)}
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">开始日期</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">开始日期</Label>
                   <Input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">结束日期</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">结束日期</Label>
                   <Input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
+                    className="dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
                   />
                 </div>
                 <div className="col-span-full flex gap-2">
@@ -590,7 +604,7 @@ export default function Expenses() {
                     variant="outline"
                     size="sm"
                     onClick={clearAllFilters}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     <Filter className="w-3 h-3" />
                     清除筛选
@@ -605,11 +619,11 @@ export default function Expenses() {
       {/* 时间筛选和排序 */}
       <div className="flex flex-col md:flex-row gap-3">
         <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as TimeFilter)} className="flex-1">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="today">今天</TabsTrigger>
-            <TabsTrigger value="week">本周</TabsTrigger>
-            <TabsTrigger value="month">本月</TabsTrigger>
-            <TabsTrigger value="all">全部</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 dark:bg-slate-800 dark:border-slate-700">
+            <TabsTrigger value="today" className="dark:text-slate-300 dark:data-[state=active]:bg-slate-700">今天</TabsTrigger>
+            <TabsTrigger value="week" className="dark:text-slate-300 dark:data-[state=active]:bg-slate-700">本周</TabsTrigger>
+            <TabsTrigger value="month" className="dark:text-slate-300 dark:data-[state=active]:bg-slate-700">本月</TabsTrigger>
+            <TabsTrigger value="all" className="dark:text-slate-300 dark:data-[state=active]:bg-slate-700">全部</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -617,7 +631,7 @@ export default function Expenses() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
           >
             <option value="date-desc">日期↓</option>
             <option value="date-asc">日期↑</option>
@@ -629,7 +643,7 @@ export default function Expenses() {
           <Button
             variant="outline"
             onClick={() => setGroupByDate(!groupByDate)}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap border-2 border-slate-300 dark:border-slate-600 hover:border-cyan-400 dark:hover:border-cyan-500 dark:bg-slate-800 dark:text-slate-200 transition-all duration-300"
           >
             {groupByDate ? '取消分组' : '按日期分组'}
           </Button>
@@ -637,23 +651,24 @@ export default function Expenses() {
       </div>
 
       {/* 类别筛选 */}
-      <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-950/50 dark:to-pink-950/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-2 mb-3">
-            <PieChartIcon className="w-4 h-4 text-purple-600" />
-            <span className="text-sm font-semibold text-purple-900">按类型筛选</span>
+            <PieChartIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-sm font-semibold text-purple-900 dark:text-purple-200">按类型筛选</span>
             {categoryFilter !== 'all' && (
-              <span className="text-xs text-purple-600 font-medium">
+              <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
                 · {formatCurrency(statistics.total)}
               </span>
             )}
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             <Button
-              variant={categoryFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setCategoryFilter('all')}
-              className={categoryFilter === 'all' ? 'bg-purple-600 hover:bg-purple-700' : 'hover:bg-purple-50'}
+              className={categoryFilter === 'all'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5'
+                : 'bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-purple-900/30 border-2 border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 transition-all duration-300'}
             >
               全部类型
             </Button>
@@ -666,12 +681,11 @@ export default function Expenses() {
               return (
                 <Button
                   key={cat.value}
-                  variant={categoryFilter === cat.value ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setCategoryFilter(cat.value)}
                   className={categoryFilter === cat.value
-                    ? 'bg-purple-600 hover:bg-purple-700 whitespace-nowrap'
-                    : 'hover:bg-purple-50 whitespace-nowrap'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap'
+                    : 'bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-purple-900/30 border-2 border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 transition-all duration-300 whitespace-nowrap'
                   }
                 >
                   {cat.icon} {cat.label}
@@ -689,31 +703,31 @@ export default function Expenses() {
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <Card className="border-2 border-blue-200">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 backdrop-blur-sm bg-gradient-to-br from-blue-50/80 to-cyan-50/80 dark:from-blue-950/50 dark:to-cyan-950/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-slate-600">总支出</span>
+              <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">总支出</span>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-blue-600">
+            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               {formatCurrency(statistics.total)}
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               共 {statistics.count} 笔
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-green-200">
+        <Card className="border-2 border-green-200 dark:border-green-800 backdrop-blur-sm bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/50 dark:to-emerald-950/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-slate-600">平均消费</span>
+              <BarChart3 className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">平均消费</span>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-green-600">
+            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               {formatCurrency(statistics.avg)}
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               最高 {formatCurrency(statistics.max)}
             </div>
           </CardContent>
@@ -722,10 +736,10 @@ export default function Expenses() {
 
       {/* 分类统计饼图 */}
       {statistics.byCategory.length > 0 && (
-        <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+        <Card className="border-2 border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/50 dark:to-purple-950/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <PieChartIcon className="w-5 h-5 text-indigo-600" />
+            <CardTitle className="text-lg flex items-center gap-2 text-slate-800 dark:text-slate-200">
+              <PieChartIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               分类支出占比
             </CardTitle>
           </CardHeader>
@@ -761,23 +775,23 @@ export default function Expenses() {
                 {statistics.byCategory.map((cat, index) => {
                   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
                   return (
-                    <div key={cat.value} className="flex items-center justify-between p-2 bg-white rounded-lg">
+                    <div key={cat.value} className="flex items-center justify-between p-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
                       <div className="flex items-center gap-3 flex-1">
                         <div
-                          className="w-4 h-4 rounded-full"
+                          className="w-4 h-4 rounded-full shadow-sm"
                           style={{ backgroundColor: colors[index % colors.length] }}
                         />
                         <span className="text-xl">{cat.icon}</span>
                         <div className="flex-1">
-                          <div className="font-medium text-slate-800">{cat.label}</div>
-                          <div className="text-xs text-slate-500">{cat.count} 笔</div>
+                          <div className="font-medium text-slate-800 dark:text-slate-200">{cat.label}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{cat.count} 笔</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-slate-800">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">
                           {formatCurrency(cat.amount)}
                         </div>
-                        <div className="text-xs text-indigo-600 font-medium">
+                        <div className="text-xs bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-medium">
                           {cat.percentage.toFixed(1)}%
                         </div>
                       </div>
@@ -793,14 +807,14 @@ export default function Expenses() {
       {/* 支出列表 */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+          <h3 className="text-lg font-semibold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
             支出明细 ({sortedExpenses.length})
             {batchMode && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleSelectAll}
-                className="ml-2"
+                className="ml-2 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 transition-all duration-300"
               >
                 {selectedIds.size === sortedExpenses.length ? (
                   <>
@@ -819,35 +833,43 @@ export default function Expenses() {
         </div>
 
         {sortedExpenses.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-slate-500">
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border-2 border-slate-200 dark:border-slate-700">
+            <CardContent className="pt-6 text-center text-slate-500 dark:text-slate-400">
               暂无支出记录
             </CardContent>
           </Card>
         ) : groupByDate && groupedExpenses ? (
           // 分组显示
-          groupedExpenses.map(([date, exps]) => {
+          groupedExpenses.map(([date, exps], groupIndex) => {
             const dayTotal = exps.reduce((sum, e) => sum + e.amount, 0)
             return (
-              <div key={date} className="space-y-2">
-                <div className="flex items-center justify-between px-3 py-2 bg-slate-100 rounded-lg">
+              <div
+                key={date}
+                className="space-y-2 animate-in slide-in-from-bottom duration-500"
+                style={{ animationDelay: `${groupIndex * 50}ms` }}
+              >
+                <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-600" />
-                    <span className="font-medium text-slate-700">
+                    <Calendar className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
                       {new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
                     </span>
-                    <span className="text-sm text-slate-500">({exps.length}笔)</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">({exps.length}笔)</span>
                   </div>
-                  <span className="font-bold text-slate-700">{formatCurrency(dayTotal)}</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-300">{formatCurrency(dayTotal)}</span>
                 </div>
-                {exps.map((expense) => {
+                {exps.map((expense, expIndex) => {
                   const category = EXPENSE_CATEGORIES.find(c => c.value === expense.category)
                   const reimbursement = expense.reimbursementId
                     ? reimbursements.find(r => r.id === expense.reimbursementId)
                     : null
 
                   return (
-                    <Card key={expense.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={expense.id}
+                      className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border-2 border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-in slide-in-from-bottom"
+                      style={{ animationDelay: `${(groupIndex * 50) + (expIndex * 30)}ms` }}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           {batchMode && (
@@ -856,11 +878,12 @@ export default function Expenses() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => toggleSelect(expense.id)}
+                                className="dark:hover:bg-slate-800"
                               >
                                 {selectedIds.has(expense.id) ? (
-                                  <CheckSquare className="w-5 h-5 text-blue-600" />
+                                  <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 ) : (
-                                  <Square className="w-5 h-5 text-slate-400" />
+                                  <Square className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 )}
                               </Button>
                             </div>
@@ -869,30 +892,30 @@ export default function Expenses() {
                             <div className="text-2xl">{category?.icon || '📝'}</div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-slate-800">{expense.description}</span>
+                                <span className="font-medium text-slate-800 dark:text-slate-200">{expense.description}</span>
                                 {expense.needsReimbursement && (
                                   reimbursement?.status === 'reimbursed' ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-700">
                                       ✓ 已报销
                                     </span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900 dark:to-orange-900 text-amber-700 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-700">
                                       💰 待报销
                                     </span>
                                   )
                                 )}
                                 {expense.note && (
-                                  <span className="text-xs text-slate-500">📝 {expense.note}</span>
+                                  <span className="text-xs text-slate-500 dark:text-slate-400">📝 {expense.note}</span>
                                 )}
                               </div>
-                              <div className="text-xs text-slate-500">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
                                 {formatShortDate(expense.date)} · {category?.label || expense.category}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="text-right">
-                              <div className="font-bold text-lg text-red-600">
+                              <div className="font-bold text-lg bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
                                 -{formatCurrency(expense.amount)}
                               </div>
                             </div>
@@ -902,7 +925,7 @@ export default function Expenses() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleEditExpense(expense)}
-                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300"
                                   title="编辑"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -911,7 +934,7 @@ export default function Expenses() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleDelete(expense.id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-300"
                                   title="删除"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -929,14 +952,18 @@ export default function Expenses() {
           })
         ) : (
           // 常规列表显示
-          sortedExpenses.map((expense) => {
+          sortedExpenses.map((expense, index) => {
             const category = EXPENSE_CATEGORIES.find(c => c.value === expense.category)
             const reimbursement = expense.reimbursementId
               ? reimbursements.find(r => r.id === expense.reimbursementId)
               : null
 
             return (
-              <Card key={expense.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={expense.id}
+                className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border-2 border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-in slide-in-from-bottom"
+                style={{ animationDelay: `${index * 30}ms` }}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     {batchMode && (
@@ -945,11 +972,12 @@ export default function Expenses() {
                           variant="ghost"
                           size="icon"
                           onClick={() => toggleSelect(expense.id)}
+                          className="dark:hover:bg-slate-800"
                         >
                           {selectedIds.has(expense.id) ? (
-                            <CheckSquare className="w-5 h-5 text-blue-600" />
+                            <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           ) : (
-                            <Square className="w-5 h-5 text-slate-400" />
+                            <Square className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                           )}
                         </Button>
                       </div>
@@ -958,27 +986,27 @@ export default function Expenses() {
                       <div className="text-2xl">{category?.icon || '📝'}</div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-slate-800">{expense.description}</span>
+                          <span className="font-medium text-slate-800 dark:text-slate-200">{expense.description}</span>
                           {expense.needsReimbursement && (
                             reimbursement?.status === 'reimbursed' ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-700">
                                 ✓ 已报销
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900 dark:to-orange-900 text-amber-700 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-700">
                                 💰 待报销
                               </span>
                             )
                           )}
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                           {formatShortDate(expense.date)} · {category?.label || expense.category}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="font-bold text-lg text-red-600">
+                        <div className="font-bold text-lg bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
                           -{formatCurrency(expense.amount)}
                         </div>
                       </div>
@@ -988,7 +1016,7 @@ export default function Expenses() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleEditExpense(expense)}
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300"
                             title="编辑"
                           >
                             <Edit className="w-4 h-4" />
@@ -997,7 +1025,7 @@ export default function Expenses() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(expense.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-300"
                             title="删除"
                           >
                             <Trash2 className="w-4 h-4" />

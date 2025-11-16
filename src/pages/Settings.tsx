@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, Edit, Check, Tag as TagIcon, BookOpen, DollarSign, RefreshCw, FileText, Circle } from 'lucide-react'
+import { Plus, Trash2, Edit, Check, Tag as TagIcon, BookOpen, DollarSign, RefreshCw, FileText, Circle, Play } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -376,44 +376,63 @@ export default function Settings() {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto pb-20 md:pb-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto pb-20 md:pb-6 animate-in fade-in duration-500">
       {/* 页面标题 */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800">系统设置</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+          系统设置
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           管理标签、账本、预算、周期性支出和模板
         </p>
       </div>
 
       <Tabs defaultValue="tags" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="tags">
+        <TabsList className="grid w-full grid-cols-5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700/50 p-1">
+          <TabsTrigger
+            value="tags"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white dark:data-[state=active]:from-violet-500 dark:data-[state=active]:to-indigo-500 transition-all duration-300"
+          >
             <TagIcon className="w-4 h-4 mr-2" />
-            标签
+            <span className="hidden sm:inline">标签</span>
           </TabsTrigger>
-          <TabsTrigger value="books">
+          <TabsTrigger
+            value="books"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white dark:data-[state=active]:from-violet-500 dark:data-[state=active]:to-indigo-500 transition-all duration-300"
+          >
             <BookOpen className="w-4 h-4 mr-2" />
-            账本
+            <span className="hidden sm:inline">账本</span>
           </TabsTrigger>
-          <TabsTrigger value="budgets">
+          <TabsTrigger
+            value="budgets"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white dark:data-[state=active]:from-violet-500 dark:data-[state=active]:to-indigo-500 transition-all duration-300"
+          >
             <DollarSign className="w-4 h-4 mr-2" />
-            预算
+            <span className="hidden sm:inline">预算</span>
           </TabsTrigger>
-          <TabsTrigger value="recurring">
+          <TabsTrigger
+            value="recurring"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white dark:data-[state=active]:from-violet-500 dark:data-[state=active]:to-indigo-500 transition-all duration-300"
+          >
             <RefreshCw className="w-4 h-4 mr-2" />
-            周期
+            <span className="hidden sm:inline">周期</span>
           </TabsTrigger>
-          <TabsTrigger value="templates">
+          <TabsTrigger
+            value="templates"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white dark:data-[state=active]:from-violet-500 dark:data-[state=active]:to-indigo-500 transition-all duration-300"
+          >
             <FileText className="w-4 h-4 mr-2" />
-            模板
+            <span className="hidden sm:inline">模板</span>
           </TabsTrigger>
         </TabsList>
 
         {/* ===== 标签管理 ===== */}
-        <TabsContent value="tags" className="space-y-4">
-          <Card>
+        <TabsContent value="tags" className="space-y-4 animate-in slide-in-from-bottom duration-500">
+          <Card className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm border-violet-200 dark:border-violet-700/50 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>标签管理</CardTitle>
+              <CardTitle className="text-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                标签管理
+              </CardTitle>
               <Dialog open={activeDialog === 'tag'} onOpenChange={(open) => {
                 if (!open) {
                   setActiveDialog(null)
@@ -422,35 +441,41 @@ export default function Settings() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('tag')}>
+                  <Button
+                    onClick={() => setActiveDialog('tag')}
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     新建标签
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-gradient-to-br from-white/95 to-slate-50/95 dark:from-slate-900/95 dark:to-slate-800/95 backdrop-blur-xl border-violet-200 dark:border-violet-700">
                   <DialogHeader>
-                    <DialogTitle>{editingTag ? '编辑标签' : '新建标签'}</DialogTitle>
+                    <DialogTitle className="text-xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                      {editingTag ? '编辑标签' : '新建标签'}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>标签名称</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">标签名称</Label>
                       <Input
                         value={tagForm.name}
                         onChange={(e) => setTagForm({ ...tagForm, name: e.target.value })}
                         placeholder="输入标签名称"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>图标</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">图标</Label>
                       <div className="grid grid-cols-6 gap-2 mt-2">
                         {iconOptions.map((icon) => (
                           <button
                             key={icon}
                             onClick={() => setTagForm({ ...tagForm, icon })}
-                            className={`p-2 text-2xl rounded border-2 transition-colors ${
+                            className={`p-2 text-2xl rounded-lg border-2 transition-all duration-300 hover:scale-110 ${
                               tagForm.icon === icon
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-slate-200 hover:border-slate-300'
+                                ? 'border-violet-500 dark:border-violet-400 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30 shadow-lg'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600 bg-white/50 dark:bg-slate-800/50'
                             }`}
                           >
                             {icon}
@@ -459,26 +484,29 @@ export default function Settings() {
                       </div>
                     </div>
                     <div>
-                      <Label>颜色</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">颜色</Label>
                       <div className="grid grid-cols-4 gap-2 mt-2">
                         {colorOptions.map((color) => (
                           <button
                             key={color.value}
                             onClick={() => setTagForm({ ...tagForm, color: color.value })}
-                            className={`p-3 rounded border-2 transition-all flex items-center gap-2 ${
+                            className={`p-3 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
                               tagForm.color === color.value
-                                ? 'border-slate-800 shadow-md'
-                                : 'border-slate-200 hover:border-slate-300'
+                                ? 'border-violet-500 dark:border-violet-400 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30 shadow-lg'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600 bg-white/50 dark:bg-slate-800/50'
                             }`}
                           >
                             <Circle className="w-4 h-4" fill={color.value} color={color.value} />
-                            <span className="text-sm">{color.label}</span>
+                            <span className="text-sm text-slate-700 dark:text-slate-300">{color.label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveTag} className="flex-1">
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleSaveTag}
+                        className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
                         {editingTag ? '保存' : '创建'}
                       </Button>
                       <Button
@@ -488,6 +516,7 @@ export default function Settings() {
                           setEditingTag(null)
                           setTagForm({ name: '', color: '#3b82f6', icon: '🏷️' })
                         }}
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
                         取消
                       </Button>
@@ -498,44 +527,52 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               {tags.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   暂无标签，点击"新建标签"创建第一个标签
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {tags.map((tag) => (
-                    <Card key={tag.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={tag.id}
+                      className="bg-gradient-to-br from-white/60 to-slate-50/60 dark:from-slate-800/60 dark:to-slate-900/60 backdrop-blur-sm border-violet-100 dark:border-violet-900/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
                             <span className="text-2xl">{tag.icon}</span>
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <div
-                                className="font-medium"
+                                className="font-medium truncate"
                                 style={{ color: tag.color }}
                               >
                                 {tag.name}
                               </div>
-                              <div className="text-xs text-slate-500">
-                                使用次数: {tag.count || 0}
+                              <div className="text-xs">
+                                <span className="text-slate-500 dark:text-slate-400">使用: </span>
+                                <span className="font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                                  {tag.count || 0}
+                                </span>
+                                <span className="text-slate-500 dark:text-slate-400"> 次</span>
                               </div>
                             </div>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 ml-2">
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEditTag(tag)}
+                              className="hover:bg-violet-100 dark:hover:bg-violet-900/30 h-8 w-8"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDeleteTag(tag.id)}
-                              className="text-red-600"
+                              className="hover:bg-rose-100 dark:hover:bg-rose-900/30 h-8 w-8"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                             </Button>
                           </div>
                         </div>
@@ -549,10 +586,12 @@ export default function Settings() {
         </TabsContent>
 
         {/* ===== 账本管理 ===== */}
-        <TabsContent value="books" className="space-y-4">
-          <Card>
+        <TabsContent value="books" className="space-y-4 animate-in slide-in-from-bottom duration-500">
+          <Card className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm border-violet-200 dark:border-violet-700/50 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>账本管理</CardTitle>
+              <CardTitle className="text-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                账本管理
+              </CardTitle>
               <Dialog open={activeDialog === 'book'} onOpenChange={(open) => {
                 if (!open) {
                   setActiveDialog(null)
@@ -561,43 +600,50 @@ export default function Settings() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('book')}>
+                  <Button
+                    onClick={() => setActiveDialog('book')}
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     新建账本
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-gradient-to-br from-white/95 to-slate-50/95 dark:from-slate-900/95 dark:to-slate-800/95 backdrop-blur-xl border-violet-200 dark:border-violet-700">
                   <DialogHeader>
-                    <DialogTitle>{editingBook ? '编辑账本' : '新建账本'}</DialogTitle>
+                    <DialogTitle className="text-xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                      {editingBook ? '编辑账本' : '新建账本'}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>账本名称</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">账本名称</Label>
                       <Input
                         value={bookForm.name}
                         onChange={(e) => setBookForm({ ...bookForm, name: e.target.value })}
                         placeholder="例如: 个人账本"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>描述（可选）</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">描述（可选）</Label>
                       <Input
                         value={bookForm.description}
                         onChange={(e) => setBookForm({ ...bookForm, description: e.target.value })}
                         placeholder="账本描述"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>图标</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">图标</Label>
                       <div className="grid grid-cols-6 gap-2 mt-2">
                         {['📚', '💼', '🏠', '✈️', '🎓', '🏥', '🛒', '💳', '🎁', '🚗', '🍔', '🎮'].map((icon) => (
                           <button
                             key={icon}
                             onClick={() => setBookForm({ ...bookForm, icon })}
-                            className={`p-2 text-2xl rounded border-2 transition-colors ${
+                            className={`p-2 text-2xl rounded-lg border-2 transition-all duration-300 hover:scale-110 ${
                               bookForm.icon === icon
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-slate-200 hover:border-slate-300'
+                                ? 'border-violet-500 dark:border-violet-400 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30 shadow-lg'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600 bg-white/50 dark:bg-slate-800/50'
                             }`}
                           >
                             {icon}
@@ -606,26 +652,29 @@ export default function Settings() {
                       </div>
                     </div>
                     <div>
-                      <Label>颜色</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">颜色</Label>
                       <div className="grid grid-cols-4 gap-2 mt-2">
                         {colorOptions.map((color) => (
                           <button
                             key={color.value}
                             onClick={() => setBookForm({ ...bookForm, color: color.value })}
-                            className={`p-3 rounded border-2 transition-all flex items-center gap-2 ${
+                            className={`p-3 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
                               bookForm.color === color.value
-                                ? 'border-slate-800 shadow-md'
-                                : 'border-slate-200 hover:border-slate-300'
+                                ? 'border-violet-500 dark:border-violet-400 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30 shadow-lg'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600 bg-white/50 dark:bg-slate-800/50'
                             }`}
                           >
                             <Circle className="w-4 h-4" fill={color.value} color={color.value} />
-                            <span className="text-sm">{color.label}</span>
+                            <span className="text-sm text-slate-700 dark:text-slate-300">{color.label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveBook} className="flex-1">
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleSaveBook}
+                        className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
                         {editingBook ? '保存' : '创建'}
                       </Button>
                       <Button
@@ -635,6 +684,7 @@ export default function Settings() {
                           setEditingBook(null)
                           setBookForm({ name: '', description: '', icon: '📚', color: '#3b82f6' })
                         }}
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
                         取消
                       </Button>
@@ -645,19 +695,22 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               {accountBooks.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   暂无账本，点击"新建账本"创建第一个账本
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {accountBooks.map((book) => (
-                    <Card key={book.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={book.id}
+                      className="bg-gradient-to-br from-white/60 to-slate-50/60 dark:from-slate-800/60 dark:to-slate-900/60 backdrop-blur-sm border-violet-100 dark:border-violet-900/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-3xl">{book.icon}</span>
-                            <div>
-                              <div className="flex items-center gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span
                                   className="font-medium"
                                   style={{ color: book.color }}
@@ -665,23 +718,23 @@ export default function Settings() {
                                   {book.name}
                                 </span>
                                 {book.isDefault && (
-                                  <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
+                                  <span className="px-2 py-0.5 text-xs bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-300 dark:border-emerald-700">
                                     默认
                                   </span>
                                 )}
                               </div>
                               {book.description && (
-                                <div className="text-xs text-slate-500">{book.description}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{book.description}</div>
                               )}
                             </div>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 ml-2">
                             {!book.isDefault && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setDefaultAccountBook(book.id)}
-                                className="text-xs"
+                                className="text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-300"
                               >
                                 设为默认
                               </Button>
@@ -690,17 +743,18 @@ export default function Settings() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEditBook(book)}
+                              className="hover:bg-violet-100 dark:hover:bg-violet-900/30 h-8 w-8"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDeleteBook(book.id)}
-                              className="text-red-600"
+                              className="hover:bg-rose-100 dark:hover:bg-rose-900/30 h-8 w-8"
                               disabled={book.isDefault}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                             </Button>
                           </div>
                         </div>
@@ -714,10 +768,12 @@ export default function Settings() {
         </TabsContent>
 
         {/* ===== 预算管理 ===== */}
-        <TabsContent value="budgets" className="space-y-4">
-          <Card>
+        <TabsContent value="budgets" className="space-y-4 animate-in slide-in-from-bottom duration-500">
+          <Card className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm border-violet-200 dark:border-violet-700/50 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>预算管理</CardTitle>
+              <CardTitle className="text-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                预算管理
+              </CardTitle>
               <Dialog open={activeDialog === 'budget'} onOpenChange={(open) => {
                 if (!open) {
                   setActiveDialog(null)
@@ -732,22 +788,27 @@ export default function Settings() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('budget')}>
+                  <Button
+                    onClick={() => setActiveDialog('budget')}
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     新建预算
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-gradient-to-br from-white/95 to-slate-50/95 dark:from-slate-900/95 dark:to-slate-800/95 backdrop-blur-xl border-violet-200 dark:border-violet-700">
                   <DialogHeader>
-                    <DialogTitle>{editingBudget ? '编辑预算' : '新建预算'}</DialogTitle>
+                    <DialogTitle className="text-xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                      {editingBudget ? '编辑预算' : '新建预算'}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>预算类别</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">预算类别</Label>
                       <select
                         value={budgetForm.category}
                         onChange={(e) => setBudgetForm({ ...budgetForm, category: e.target.value })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                       >
                         <option value="总预算">总预算</option>
                         {EXPENSE_CATEGORIES.map((cat) => (
@@ -758,20 +819,21 @@ export default function Settings() {
                       </select>
                     </div>
                     <div>
-                      <Label>预算金额</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">预算金额</Label>
                       <Input
                         type="number"
                         value={budgetForm.amount}
                         onChange={(e) => setBudgetForm({ ...budgetForm, amount: e.target.value })}
                         placeholder="输入预算金额"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>预算周期</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">预算周期</Label>
                       <select
                         value={budgetForm.period}
                         onChange={(e) => setBudgetForm({ ...budgetForm, period: e.target.value as any })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                       >
                         <option value="daily">每日</option>
                         <option value="weekly">每周</option>
@@ -780,26 +842,36 @@ export default function Settings() {
                       </select>
                     </div>
                     <div>
-                      <Label>预警阈值 ({budgetForm.warningThreshold}%)</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">
+                        预警阈值 (
+                        <span className="font-semibold bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
+                          {budgetForm.warningThreshold}%
+                        </span>
+                        )
+                      </Label>
                       <input
                         type="range"
                         min="50"
                         max="100"
                         value={budgetForm.warningThreshold}
                         onChange={(e) => setBudgetForm({ ...budgetForm, warningThreshold: parseInt(e.target.value) })}
-                        className="w-full"
+                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-400"
                       />
                     </div>
                     <div>
-                      <Label>开始日期</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">开始日期</Label>
                       <Input
                         type="date"
                         value={budgetForm.startDate}
                         onChange={(e) => setBudgetForm({ ...budgetForm, startDate: e.target.value })}
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveBudget} className="flex-1">
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleSaveBudget}
+                        className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
                         {editingBudget ? '保存' : '创建'}
                       </Button>
                       <Button
@@ -815,6 +887,7 @@ export default function Settings() {
                             startDate: new Date().toISOString().split('T')[0],
                           })
                         }}
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
                         取消
                       </Button>
@@ -825,68 +898,101 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               {budgets.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   暂无预算，点击"新建预算"创建第一个预算
                 </div>
               ) : (
                 <div className="space-y-3">
                   {budgetStatuses.map((status) => {
-                    const statusColor =
-                      status.status === 'exceeded' ? 'red' :
-                      status.status === 'warning' ? 'orange' : 'green'
+                    const gradientClass =
+                      status.status === 'exceeded'
+                        ? 'from-rose-600 to-red-600 dark:from-rose-400 dark:to-red-400'
+                        : status.status === 'warning'
+                        ? 'from-amber-500 to-orange-500 dark:from-amber-400 dark:to-orange-400'
+                        : 'from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400'
+
+                    const bgClass =
+                      status.status === 'exceeded'
+                        ? 'from-rose-100 to-red-100 dark:from-rose-900/50 dark:to-red-900/50 border-rose-300 dark:border-rose-700'
+                        : status.status === 'warning'
+                        ? 'from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/50 border-amber-300 dark:border-amber-700'
+                        : 'from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50 border-emerald-300 dark:border-emerald-700'
+
+                    const progressGradient =
+                      status.status === 'exceeded'
+                        ? 'from-rose-600 to-red-600'
+                        : status.status === 'warning'
+                        ? 'from-amber-500 to-orange-500'
+                        : 'from-emerald-600 to-green-600'
 
                     return (
-                      <Card key={status.budget.id} className="hover:shadow-md transition-shadow">
+                      <Card
+                        key={status.budget.id}
+                        className="bg-gradient-to-br from-white/60 to-slate-50/60 dark:from-slate-800/60 dark:to-slate-900/60 backdrop-blur-sm border-violet-100 dark:border-violet-900/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                      >
                         <CardContent className="p-4">
                           <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="font-medium text-lg">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-lg text-slate-800 dark:text-slate-200">
                                   {status.budget.category}
                                 </div>
-                                <div className="text-sm text-slate-500">
+                                <div className="text-sm text-slate-500 dark:text-slate-400">
                                   {
                                     status.budget.period === 'daily' ? '每日预算' :
                                     status.budget.period === 'weekly' ? '每周预算' :
                                     status.budget.period === 'monthly' ? '每月预算' : '每年预算'
                                   }
-                                  · 剩余 {status.daysLeft} 天
+                                  <span className="mx-1">·</span>
+                                  <span className="font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">
+                                    剩余 {status.daysLeft} 天
+                                  </span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium bg-${statusColor}-100 text-${statusColor}-700`}>
-                                  {status.percentage.toFixed(0)}%
+                                <span className={`px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r ${bgClass} border`}>
+                                  <span className={`bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent`}>
+                                    {status.percentage.toFixed(0)}%
+                                  </span>
                                 </span>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleEditBudget(status.budget)}
+                                  className="hover:bg-violet-100 dark:hover:bg-violet-900/30 h-8 w-8"
                                 >
-                                  <Edit className="w-4 h-4" />
+                                  <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleDeleteBudget(status.budget.id)}
-                                  className="text-red-600"
+                                  className="hover:bg-rose-100 dark:hover:bg-rose-900/30 h-8 w-8"
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                                 </Button>
                               </div>
                             </div>
                             <div>
-                              <div className="flex items-center justify-between text-sm mb-1">
-                                <span>已花费: {formatCurrency(status.spent)}</span>
-                                <span>预算: {formatCurrency(status.budget.amount)}</span>
+                              <div className="flex items-center justify-between text-sm mb-2">
+                                <span className="text-slate-600 dark:text-slate-400">
+                                  已花费: <span className={`font-semibold bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent`}>{formatCurrency(status.spent)}</span>
+                                </span>
+                                <span className="text-slate-600 dark:text-slate-400">
+                                  预算: <span className="font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">{formatCurrency(status.budget.amount)}</span>
+                                </span>
                               </div>
-                              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner">
                                 <div
-                                  className={`h-full transition-all bg-${statusColor}-500`}
+                                  className={`h-full transition-all duration-500 bg-gradient-to-r ${progressGradient} rounded-full`}
                                   style={{ width: `${Math.min(100, status.percentage)}%` }}
                                 />
                               </div>
-                              <div className="text-xs text-slate-500 mt-1">
-                                剩余: {formatCurrency(status.remaining)}
+                              <div className="text-xs mt-2">
+                                <span className="text-slate-500 dark:text-slate-400">剩余: </span>
+                                <span className={`font-semibold bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent`}>
+                                  {formatCurrency(status.remaining)}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -901,10 +1007,12 @@ export default function Settings() {
         </TabsContent>
 
         {/* ===== 周期性支出 ===== */}
-        <TabsContent value="recurring" className="space-y-4">
-          <Card>
+        <TabsContent value="recurring" className="space-y-4 animate-in slide-in-from-bottom duration-500">
+          <Card className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm border-violet-200 dark:border-violet-700/50 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>周期性支出</CardTitle>
+              <CardTitle className="text-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                周期性支出
+              </CardTitle>
               <Dialog open={activeDialog === 'recurring'} onOpenChange={(open) => {
                 if (!open) {
                   setActiveDialog(null)
@@ -926,30 +1034,36 @@ export default function Settings() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('recurring')}>
+                  <Button
+                    onClick={() => setActiveDialog('recurring')}
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     新建周期性支出
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white/95 to-slate-50/95 dark:from-slate-900/95 dark:to-slate-800/95 backdrop-blur-xl border-violet-200 dark:border-violet-700">
                   <DialogHeader>
-                    <DialogTitle>{editingRecurring ? '编辑周期性支出' : '新建周期性支出'}</DialogTitle>
+                    <DialogTitle className="text-xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                      {editingRecurring ? '编辑周期性支出' : '新建周期性支出'}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>名称</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">名称</Label>
                       <Input
                         value={recurringForm.name}
                         onChange={(e) => setRecurringForm({ ...recurringForm, name: e.target.value })}
                         placeholder="例如: 房租"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>分类</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">分类</Label>
                       <select
                         value={recurringForm.category}
                         onChange={(e) => setRecurringForm({ ...recurringForm, category: e.target.value })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                       >
                         {EXPENSE_CATEGORIES.map((cat) => (
                           <option key={cat.value} value={cat.value}>
@@ -959,28 +1073,30 @@ export default function Settings() {
                       </select>
                     </div>
                     <div>
-                      <Label>金额</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">金额</Label>
                       <Input
                         type="number"
                         value={recurringForm.amount}
                         onChange={(e) => setRecurringForm({ ...recurringForm, amount: e.target.value })}
                         placeholder="输入金额"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>描述</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">描述</Label>
                       <Input
                         value={recurringForm.description}
                         onChange={(e) => setRecurringForm({ ...recurringForm, description: e.target.value })}
                         placeholder="支出描述"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>频率</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">频率</Label>
                       <select
                         value={recurringForm.frequency}
                         onChange={(e) => setRecurringForm({ ...recurringForm, frequency: e.target.value as any })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                       >
                         <option value="daily">每天</option>
                         <option value="weekly">每周</option>
@@ -991,11 +1107,11 @@ export default function Settings() {
 
                     {recurringForm.frequency === 'weekly' && (
                       <div>
-                        <Label>星期几</Label>
+                        <Label className="text-slate-700 dark:text-slate-300">星期几</Label>
                         <select
                           value={recurringForm.dayOfWeek}
                           onChange={(e) => setRecurringForm({ ...recurringForm, dayOfWeek: parseInt(e.target.value) })}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                         >
                           <option value="0">星期日</option>
                           <option value="1">星期一</option>
@@ -1010,24 +1126,25 @@ export default function Settings() {
 
                     {(recurringForm.frequency === 'monthly' || recurringForm.frequency === 'yearly') && (
                       <div>
-                        <Label>几号</Label>
+                        <Label className="text-slate-700 dark:text-slate-300">几号</Label>
                         <Input
                           type="number"
                           min="1"
                           max="31"
                           value={recurringForm.dayOfMonth}
                           onChange={(e) => setRecurringForm({ ...recurringForm, dayOfMonth: parseInt(e.target.value) })}
+                          className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                         />
                       </div>
                     )}
 
                     {recurringForm.frequency === 'yearly' && (
                       <div>
-                        <Label>几月</Label>
+                        <Label className="text-slate-700 dark:text-slate-300">几月</Label>
                         <select
                           value={recurringForm.monthOfYear}
                           onChange={(e) => setRecurringForm({ ...recurringForm, monthOfYear: parseInt(e.target.value) })}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                         >
                           {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
                             <option key={m} value={m}>{m}月</option>
@@ -1037,19 +1154,21 @@ export default function Settings() {
                     )}
 
                     <div>
-                      <Label>开始日期</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">开始日期</Label>
                       <Input
                         type="date"
                         value={recurringForm.startDate}
                         onChange={(e) => setRecurringForm({ ...recurringForm, startDate: e.target.value })}
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>结束日期（可选）</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">结束日期（可选）</Label>
                       <Input
                         type="date"
                         value={recurringForm.endDate}
                         onChange={(e) => setRecurringForm({ ...recurringForm, endDate: e.target.value })}
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -1058,9 +1177,9 @@ export default function Settings() {
                         id="enabled"
                         checked={recurringForm.enabled}
                         onChange={(e) => setRecurringForm({ ...recurringForm, enabled: e.target.checked })}
-                        className="w-4 h-4"
+                        className="w-4 h-4 accent-violet-600 dark:accent-violet-400"
                       />
-                      <Label htmlFor="enabled" className="cursor-pointer">启用此周期性支出</Label>
+                      <Label htmlFor="enabled" className="cursor-pointer text-slate-700 dark:text-slate-300">启用此周期性支出</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
@@ -1068,12 +1187,15 @@ export default function Settings() {
                         id="autoCreate"
                         checked={recurringForm.autoCreate}
                         onChange={(e) => setRecurringForm({ ...recurringForm, autoCreate: e.target.checked })}
-                        className="w-4 h-4"
+                        className="w-4 h-4 accent-violet-600 dark:accent-violet-400"
                       />
-                      <Label htmlFor="autoCreate" className="cursor-pointer">自动创建支出记录</Label>
+                      <Label htmlFor="autoCreate" className="cursor-pointer text-slate-700 dark:text-slate-300">自动创建支出记录</Label>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveRecurring} className="flex-1">
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleSaveRecurring}
+                        className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
                         {editingRecurring ? '保存' : '创建'}
                       </Button>
                       <Button
@@ -1082,6 +1204,7 @@ export default function Settings() {
                           setActiveDialog(null)
                           setEditingRecurring(null)
                         }}
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
                         取消
                       </Button>
@@ -1092,64 +1215,78 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               {recurringExpenses.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   暂无周期性支出，点击"新建周期性支出"创建第一个
                 </div>
               ) : (
                 <div className="space-y-3">
                   {recurringExpenses.map((recurring) => (
-                    <Card key={recurring.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={recurring.id}
+                      className="bg-gradient-to-br from-white/60 to-slate-50/60 dark:from-slate-800/60 dark:to-slate-900/60 backdrop-blur-sm border-violet-100 dark:border-violet-900/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                    >
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-lg">{recurring.name}</span>
+                        <div className="flex items-center justify-between flex-wrap gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="font-medium text-lg text-slate-800 dark:text-slate-200">{recurring.name}</span>
                               {recurring.enabled ? (
-                                <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
+                                <span className="px-2 py-0.5 text-xs bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-300 dark:border-emerald-700">
                                   ✓ 启用
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 text-xs bg-slate-100 text-slate-700 rounded-full">
+                                <span className="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full border border-slate-300 dark:border-slate-600">
                                   ✗ 禁用
                                 </span>
                               )}
                             </div>
-                            <div className="text-sm text-slate-600">
-                              {formatCurrency(recurring.amount)} · {recurring.description}
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                              <span className="font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                                {formatCurrency(recurring.amount)}
+                              </span>
+                              <span className="mx-1">·</span>
+                              {recurring.description}
                             </div>
-                            <div className="text-xs text-slate-500 mt-1">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                               {
                                 recurring.frequency === 'daily' ? '每天' :
                                 recurring.frequency === 'weekly' ? `每周${['日','一','二','三','四','五','六'][recurring.dayOfWeek || 0]}` :
                                 recurring.frequency === 'monthly' ? `每月${recurring.dayOfMonth}号` :
                                 `每年${recurring.monthOfYear}月${recurring.dayOfMonth}号`
                               }
-                              {recurring.lastExecuted && ` · 上次执行: ${recurring.lastExecuted}`}
+                              {recurring.lastExecuted && (
+                                <span>
+                                  <span className="mx-1">·</span>
+                                  上次: <span className="font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">{recurring.lastExecuted}</span>
+                                </span>
+                              )}
                             </div>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 items-center">
                             <Button
-                              variant="outline"
                               size="sm"
                               onClick={() => handleExecuteRecurring(recurring.id)}
                               disabled={!recurring.enabled}
+                              className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 dark:from-emerald-500 dark:to-green-500 dark:hover:from-emerald-600 dark:hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
+                              <Play className="w-3 h-3 mr-1" />
                               立即执行
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEditRecurring(recurring)}
+                              className="hover:bg-violet-100 dark:hover:bg-violet-900/30 h-8 w-8"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDeleteRecurring(recurring.id)}
-                              className="text-red-600"
+                              className="hover:bg-rose-100 dark:hover:bg-rose-900/30 h-8 w-8"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                             </Button>
                           </div>
                         </div>
@@ -1163,10 +1300,12 @@ export default function Settings() {
         </TabsContent>
 
         {/* ===== 模板管理 ===== */}
-        <TabsContent value="templates" className="space-y-4">
-          <Card>
+        <TabsContent value="templates" className="space-y-4 animate-in slide-in-from-bottom duration-500">
+          <Card className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm border-violet-200 dark:border-violet-700/50 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>支出模板</CardTitle>
+              <CardTitle className="text-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                支出模板
+              </CardTitle>
               <Dialog open={activeDialog === 'template'} onOpenChange={(open) => {
                 if (!open) {
                   setActiveDialog(null)
@@ -1181,30 +1320,36 @@ export default function Settings() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('template')}>
+                  <Button
+                    onClick={() => setActiveDialog('template')}
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     新建模板
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-gradient-to-br from-white/95 to-slate-50/95 dark:from-slate-900/95 dark:to-slate-800/95 backdrop-blur-xl border-violet-200 dark:border-violet-700">
                   <DialogHeader>
-                    <DialogTitle>{editingTemplate ? '编辑模板' : '新建模板'}</DialogTitle>
+                    <DialogTitle className="text-xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                      {editingTemplate ? '编辑模板' : '新建模板'}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>模板名称</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">模板名称</Label>
                       <Input
                         value={templateForm.name}
                         onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
                         placeholder="例如: 工作日午餐"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>分类</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">分类</Label>
                       <select
                         value={templateForm.category}
                         onChange={(e) => setTemplateForm({ ...templateForm, category: e.target.value })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-violet-200 dark:border-violet-700 bg-white/50 dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 dark:focus:border-violet-400"
                       >
                         {EXPENSE_CATEGORIES.map((cat) => (
                           <option key={cat.value} value={cat.value}>
@@ -1214,20 +1359,22 @@ export default function Settings() {
                       </select>
                     </div>
                     <div>
-                      <Label>金额</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">金额</Label>
                       <Input
                         type="number"
                         value={templateForm.amount}
                         onChange={(e) => setTemplateForm({ ...templateForm, amount: e.target.value })}
                         placeholder="输入金额"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div>
-                      <Label>描述</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">描述</Label>
                       <Input
                         value={templateForm.description}
                         onChange={(e) => setTemplateForm({ ...templateForm, description: e.target.value })}
                         placeholder="支出描述"
+                        className="border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400 bg-white/50 dark:bg-slate-800/50"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -1236,12 +1383,15 @@ export default function Settings() {
                         id="needsReimbursement"
                         checked={templateForm.needsReimbursement}
                         onChange={(e) => setTemplateForm({ ...templateForm, needsReimbursement: e.target.checked })}
-                        className="w-4 h-4"
+                        className="w-4 h-4 accent-violet-600 dark:accent-violet-400"
                       />
-                      <Label htmlFor="needsReimbursement" className="cursor-pointer">需要报销</Label>
+                      <Label htmlFor="needsReimbursement" className="cursor-pointer text-slate-700 dark:text-slate-300">需要报销</Label>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveTemplate} className="flex-1">
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleSaveTemplate}
+                        className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 dark:from-violet-500 dark:to-indigo-500 dark:hover:from-violet-600 dark:hover:to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
                         {editingTemplate ? '保存' : '创建'}
                       </Button>
                       <Button
@@ -1250,6 +1400,7 @@ export default function Settings() {
                           setActiveDialog(null)
                           setEditingTemplate(null)
                         }}
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
                         取消
                       </Button>
@@ -1260,32 +1411,38 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               {expenseTemplates.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   暂无模板，点击"新建模板"创建第一个模板
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {expenseTemplates.map((template) => (
-                    <Card key={template.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={template.id}
+                      className="bg-gradient-to-br from-white/60 to-slate-50/60 dark:from-slate-800/60 dark:to-slate-900/60 backdrop-blur-sm border-violet-100 dark:border-violet-900/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                    >
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium text-lg mb-1">
+                        <div className="flex items-center justify-between flex-wrap gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-lg mb-1 text-slate-800 dark:text-slate-200">
                               {template.name}
                             </div>
-                            <div className="text-sm text-slate-600">
-                              {EXPENSE_CATEGORIES.find(c => c.value === template.category)?.label} · {formatCurrency(template.amount)}
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                              {EXPENSE_CATEGORIES.find(c => c.value === template.category)?.label}
+                              <span className="mx-1">·</span>
+                              <span className="font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                                {formatCurrency(template.amount)}
+                              </span>
                             </div>
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                               {template.description}
                             </div>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 items-center">
                             <Button
-                              variant="outline"
                               size="sm"
                               onClick={() => handleApplyTemplate(template)}
-                              className="text-xs"
+                              className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 dark:from-emerald-500 dark:to-green-500 dark:hover:from-emerald-600 dark:hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300"
                             >
                               <Check className="w-3 h-3 mr-1" />
                               应用
@@ -1294,16 +1451,17 @@ export default function Settings() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEditTemplate(template)}
+                              className="hover:bg-violet-100 dark:hover:bg-violet-900/30 h-8 w-8"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDeleteTemplate(template.id)}
-                              className="text-red-600"
+                              className="hover:bg-rose-100 dark:hover:bg-rose-900/30 h-8 w-8"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                             </Button>
                           </div>
                         </div>
